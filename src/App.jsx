@@ -1,12 +1,14 @@
 import './App.css'
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls} from '@react-three/drei';
 import * as THREE from 'three';
 
-const App = () => {
+import Player from './Models/Player';
 
+const App = () => {
+  const [animationState, setAnimationState] = useState('idle');
 
   return (
     <Canvas shadows camera={{ position: [2, 2, 4], fov: 50 }}>
@@ -22,12 +24,16 @@ const App = () => {
         />
 
         {/* Objects */}
-        <mesh>
+        {/*
+        <mesh position={[0, 0, 0]} >
           <boxGeometry args={[1, 1, 1]} />
           <meshStandardMaterial color="orange" />
         </mesh>
+        */}
 
-        {/* Optional: Orbit Controls */}
+        <Player animationState={animationState}/>
+
+        {/*Moving Camera through Orbit Controls */}
         <OrbitControls />
       </Suspense>
     </Canvas>
