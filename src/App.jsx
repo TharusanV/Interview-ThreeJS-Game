@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import Player from './Models/Player';
 
 const App = () => {
-  const [animationState, setAnimationState] = useState('idle');
+  const [animationState, setAnimationState] = useState('roundHouseKick');
 
   return (
     <Canvas shadows camera={{ position: [2, 2, 4], fov: 50 }}>
@@ -24,13 +24,11 @@ const App = () => {
         />
 
         {/* Objects */}
-        {/*
-        <mesh position={[0, 0, 0]} >
-          <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color="orange" />
+        <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} >
+          <planeGeometry args={[10, 10]} />
+          <meshStandardMaterial color="white" />
         </mesh>
-        */}
-
+    
         <Player animationState={animationState}/>
 
         {/*Moving Camera through Orbit Controls */}
