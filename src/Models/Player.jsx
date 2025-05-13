@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 const FRAME_RATE = 30; // Mixamo default
 
-function Player({ animationState}) {
+function Player({ animationState, setAnimationState}) {
   const modelRef = useRef();
   const mixerRef = useRef();
 
@@ -42,10 +42,6 @@ function Player({ animationState}) {
 
     setActions(animActions);
 
-    // Play default idle animation on start
-    animActions.idle.play();
-    setCurrentAction('idle');
-
     return () => {
       mixer.stopAllAction();
     };
@@ -64,17 +60,38 @@ function Player({ animationState}) {
 
   
   // Handle animation switching
-  useEffect(() => {
-    if (!actions || !mixerRef.current) return;
+useEffect(() => {
+  if (!actions || !mixerRef.current) return;
 
-    if (animationState !== currentAction && actions[animationState]) {
-      actions[currentAction]?.fadeOut(0.2);
-      
-      actions[animationState]?.reset().fadeIn(0.2).play();
+  const mixer = mixerRef.current;
+  const newAction = actions[animationState];
+  const prevAction = actions[currentAction];
 
-      setCurrentAction(animationState);
+  if (animationState !== currentAction && newAction) {
+    prevAction?.fadeOut(0.2);
+    newAction.reset();
+
+    // Define loop behavior
+    if (animationState === 'idle') {
+      newAction.setLoop(THREE.LoopRepeat);
+    } 
+    else {
+      newAction.setLoop(THREE.LoopOnce, 1);
+      newAction.clampWhenFinished = true;
+
+      const onFinish = () => {
+        setAnimationState('idle');
+        mixer.removeEventListener('finished', onFinish); 
+      };
+
+      mixer.addEventListener('finished', onFinish);
     }
-  }, [animationState, actions, currentAction]);
+
+    newAction.fadeIn(0.2).play();
+    setCurrentAction(animationState);
+  }
+}, [animationState, actions, currentAction]);
+
 
 
   // Update animation frame
