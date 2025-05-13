@@ -60,37 +60,48 @@ function Player({ animationState, setAnimationState}) {
 
   
   // Handle animation switching
-useEffect(() => {
-  if (!actions || !mixerRef.current) return;
+  useEffect(() => {
+    if (!actions || !mixerRef.current) return;
 
-  const mixer = mixerRef.current;
-  const newAction = actions[animationState];
-  const prevAction = actions[currentAction];
+    const mixer = mixerRef.current;
+    const newAction = actions[animationState];
+    const prevAction = actions[currentAction];
 
-  if (animationState !== currentAction && newAction) {
-    prevAction?.fadeOut(0.2);
-    newAction.reset();
+    if (animationState !== currentAction && newAction) {
+      prevAction?.fadeOut(0.2);
+      newAction.reset();
 
-    // Define loop behavior
-    if (animationState === 'idle') {
-      newAction.setLoop(THREE.LoopRepeat);
-    } 
-    else {
-      newAction.setLoop(THREE.LoopOnce, 1);
-      newAction.clampWhenFinished = true;
+      //Animation speed
+      if (animationState === 'punch' || animationState === 'hook') {
+        newAction.timeScale = 1.2; 
+      } else {
+        newAction.timeScale = 1.0; // normal speed
+      }
 
-      const onFinish = () => {
-        setAnimationState('idle');
-        mixer.removeEventListener('finished', onFinish); 
-      };
+      // Loop logic
+      if (animationState === 'idle' || animationState === 'block') {
+        newAction.setLoop(THREE.LoopRepeat);
+        newAction.clampWhenFinished = false;
+      } 
+      else {
+        newAction.setLoop(THREE.LoopOnce, 1);
+        newAction.clampWhenFinished = true;
 
-      mixer.addEventListener('finished', onFinish);
+        const onFinish = () => {
+          console.log("Action finished");
+          setAnimationState('idle');
+          mixer.removeEventListener('finished', onFinish);
+        };
+
+        mixer.addEventListener('finished', onFinish);
+
+      }
+
+      newAction.fadeIn(0.2).play();
+      setCurrentAction(animationState);
     }
+  }, [animationState, actions, currentAction]);
 
-    newAction.fadeIn(0.2).play();
-    setCurrentAction(animationState);
-  }
-}, [animationState, actions, currentAction]);
 
 
 
@@ -126,6 +137,7 @@ useEffect(() => {
       ref={modelRef}
       object={base.scene}
       position={[0, -1, 0]}
+      rotation={[0, -Math.PI, 0]}
       scale={[0.3, 0.3, 0.3]}
     />
   );

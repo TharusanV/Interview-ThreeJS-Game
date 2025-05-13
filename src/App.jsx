@@ -2,13 +2,15 @@ import './App.css'
 
 import React, { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls} from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera} from '@react-three/drei';
 import * as THREE from 'three';
 
 import Player from './Models/Player';
+import CustomCamera from './CustomCamera';
 
 const App = () => {
-  const [animationState, setAnimationState] = useState('roundHouseKick');
+  const [animationState, setAnimationState] = useState('idle');
+  const [runningAttackAnimation, setRunningAttackAnimation] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -28,21 +30,29 @@ const App = () => {
         case '5':
           setAnimationState('roundHouseKick');
           break;
-        case '0':
-          setAnimationState('idle');
-          break;
         default:
           break;
       }
     };
 
+    const handleKeyUp = (e) => {
+      // For block, release returns to idle
+      if (e.key === '1') {
+        setAnimationState('idle');
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
   }, []);
 
 
   return (
-    <Canvas shadows camera={{ position: [2, 2, 4], fov: 50 }}>
+    <Canvas shadows>
       <Suspense fallback={null}>
         {/* Lighting */}
         <ambientLight intensity={0.3} />
@@ -62,8 +72,17 @@ const App = () => {
     
         <Player animationState={animationState} setAnimationState={setAnimationState}/>
 
-        {/*Moving Camera through Orbit Controls */}
-        <OrbitControls />
+        {/*Camera */}
+        <PerspectiveCamera makeDefault position={[0.2, 0.5, 1]}  fov={75} /> 
+        <OrbitControls
+          target={[0.2, 1, 0]}
+          enablePan={false}    
+          enableZoom={true}
+          maxPolarAngle={Math.PI / 2.2}
+          minDistance={1}
+          maxDistance={5}
+        />
+        
       </Suspense>
     </Canvas>
   )
