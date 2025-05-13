@@ -2,89 +2,72 @@ import './App.css'
 
 import React, { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera} from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, KeyboardControls} from '@react-three/drei';
 import * as THREE from 'three';
 
-import Player from './Models/Player';
-import CustomCamera from './CustomCamera';
+
+import FightKeyBinds from './Models/FightKeyBinds';
+import { Physics, RigidBody } from '@react-three/rapier';
+import PlayerController from './Models/PlayerController';
+
+
+const keyboardMap = [
+  { name: "forward", keys: ["ArrowUp", "KeyW"] },
+  { name: "backward", keys: ["ArrowDown", "KeyS"] },
+  { name: "left", keys: ["ArrowLeft", "KeyA"] },
+  { name: "right", keys: ["ArrowRight", "KeyD"] },
+  { name: "run", keys: ["Shift"] },
+];
 
 const App = () => {
+  const [cameraPosition, setCameraPosition] = useState([0.2, 0.8, 1.2]); // Starting camera position
   const [animationState, setAnimationState] = useState('idle');
   const [runningAttackAnimation, setRunningAttackAnimation] = useState(false);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      switch (e.key.toLowerCase()) {
-        case '1':
-          setAnimationState('block');
-          break;
-        case '2':
-          setAnimationState('elbow');
-          break;
-        case '3':
-          setAnimationState('punch');
-          break;
-        case '4':
-          setAnimationState('hook');
-          break;
-        case '5':
-          setAnimationState('roundHouseKick');
-          break;
-        default:
-          break;
-      }
-    };
-
-    const handleKeyUp = (e) => {
-      // For block, release returns to idle
-      if (e.key === '1') {
-        setAnimationState('idle');
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-
   return (
-    <Canvas shadows>
-      <Suspense fallback={null}>
-        {/* Lighting */}
-        <ambientLight intensity={0.3} />
-        <directionalLight
-          position={[5, 5, 5]}
-          intensity={1}
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-        />
+    <KeyboardControls map={keyboardMap}>
+      <Canvas shadows camera={cameraPosition}>
+        <Suspense fallback={null}>
 
-        {/* Objects */}
-        <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} >
-          <planeGeometry args={[10, 10]} />
-          <meshStandardMaterial color="white" />
-        </mesh>
+          {/* Lighting */}
+          <ambientLight intensity={0.3} />
+          <directionalLight
+            position={[5, 5, 5]}
+            intensity={1}
+            castShadow
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
+          />
+
+          {/* All Objects are placed here to allow for physics*/}
+          <Physics gravity={[0, -9.81, 0]} debug>
+            {/* Ground */}
+            <RigidBody type="fixed" colliders="trimesh">
+              <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
+                <planeGeometry args={[10, 10]} />
+                <meshStandardMaterial color="white" />
+              </mesh>
+            </RigidBody>
+
+            {/* Falling object */}
+            {/*
+            <RigidBody>
+              <mesh castShadow position={[0, 12, 0]}>
+                <boxGeometry args={[1, 1, 1]} />
+                <meshStandardMaterial color="hotpink" />
+              </mesh>
+            </RigidBody>
+            */}
+
+            <PlayerController animationState={animationState} setAnimationState={setAnimationState}/>
+          </Physics>
+
+          <FightKeyBinds setAnimationState={setAnimationState} />
+          
+        </Suspense>
+      </Canvas>
+    </KeyboardControls>
     
-        <Player animationState={animationState} setAnimationState={setAnimationState}/>
-
-        {/*Camera */}
-        <PerspectiveCamera makeDefault position={[0.2, 0.5, 1]}  fov={75} /> 
-        <OrbitControls
-          target={[0.2, 1, 0]}
-          enablePan={false}    
-          enableZoom={true}
-          maxPolarAngle={Math.PI / 2.2}
-          minDistance={1}
-          maxDistance={5}
-        />
-        
-      </Suspense>
-    </Canvas>
   )
 }
 

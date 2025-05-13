@@ -136,7 +136,7 @@ function Player({ animationState, setAnimationState}) {
     <primitive
       ref={modelRef}
       object={base.scene}
-      position={[0, -1, 0]}
+      position={[0, 0, 0]}
       rotation={[0, -Math.PI, 0]}
       scale={[0.3, 0.3, 0.3]}
     />
