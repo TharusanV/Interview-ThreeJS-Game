@@ -26,7 +26,7 @@ const App = () => {
 
   return (
     <KeyboardControls map={keyboardMap}>
-      <Canvas shadows camera={cameraPosition}>
+      <Canvas shadows camera={cameraPosition} fov={10}>
         <Suspense fallback={null}>
 
           {/* Lighting */}
