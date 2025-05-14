@@ -10,6 +10,27 @@ import { degToRad } from "three/src/math/MathUtils.js";
 const WALK_SPEED = 0.8;
 const RUN_SPEED = 1.6;
 
+const normalizeAngle = (angle) => {
+  while (angle > Math.PI) angle -= 2 * Math.PI;
+  while (angle < -Math.PI) angle += 2 * Math.PI;
+  return angle;
+};
+
+const lerpAngle = (start, end, t) => {
+  start = normalizeAngle(start);
+  end = normalizeAngle(end);
+
+  if (Math.abs(end - start) > Math.PI) {
+    if (end > start) {
+      start += 2 * Math.PI;
+    } else {
+      end += 2 * Math.PI;
+    }
+  }
+
+  return normalizeAngle(start + (end - start) * t);
+};
+
 const PlayerController = ({ animationState, setAnimationState }) => {
   const rb = useRef();
   const container = useRef();
@@ -24,42 +45,31 @@ const PlayerController = ({ animationState, setAnimationState }) => {
   const cameraLookAt = useRef(new Vector3());
 
   const [, get] = useKeyboardControls();
-
-  const isDragging = useRef(false);    
-  const prevMouseX = useRef(0);         
+        
   const yaw = useRef(0);                
 
   useEffect(() => {
-    const handleMouseDown = (e) => {
-      if (e.button === 0) {
-        isDragging.current = true;
-        prevMouseX.current = e.clientX;
-      }
-    };
-
-    const handleMouseUp = () => {
-      isDragging.current = false;
-    };
-
     const handleMouseMove = (e) => {
-      if (isDragging.current) {
-        const deltaX = e.clientX - prevMouseX.current;
-        yaw.current -= deltaX * 0.005; // adjust sensitivity
-        prevMouseX.current = e.clientX;
+      const deltaX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
+      yaw.current -= deltaX * 0.002; // sensitivity adjustment
+    };
+
+    const enablePointerLock = () => {
+      if (document.pointerLockElement !== document.body) {
+        document.body.requestPointerLock();
       }
     };
 
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('click', enablePointerLock);
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
 
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('click', enablePointerLock);
     };
   }, []);
+
 
   useFrame(({ camera }) => {
     // Movement
@@ -74,12 +84,42 @@ const PlayerController = ({ animationState, setAnimationState }) => {
       if (get().right) movement.x = 1;
 
       if (movement.x !== 0 || movement.z !== 0) {
-        vel.z = speed * movement.z;
-        vel.x = speed * movement.x;
+        const moveDirection = new Vector3(movement.x, 0, movement.z).normalize();
+
+        // Create a quaternion from the camera's Y rotation (yaw)
+        const cameraYaw = new Vector3(0, 1, 0);
+        const rotation = new Vector3(0, 0, 0);
+        rotation.y = yaw.current;
+
+        // Rotate movement vector by yaw
+        moveDirection.applyAxisAngle(cameraYaw, rotation.y);
+
+        vel.x = moveDirection.x * speed;
+        vel.z = moveDirection.z * speed;
       }
 
       rb.current.setLinvel(vel, true);
+
+      //Only rotate player when moving
+      if ((movement.x !== 0 || movement.z !== 0) && player.current) {
+        // Skip rotation if stepping backward only
+        const isSteppingBack = movement.z === 1 && movement.x === 0;
+        if (!isSteppingBack) {
+          const moveDirection = new Vector3(movement.x, 0, movement.z).normalize();
+          moveDirection.applyAxisAngle(new Vector3(0, 1, 0), yaw.current);
+
+          let targetAngle = Math.atan2(moveDirection.x, moveDirection.z);
+          targetAngle += Math.PI; // compensate for model's base rotation
+
+          const currentRotationY = player.current.rotation.y;
+          player.current.rotation.y = lerpAngle(currentRotationY, targetAngle, 0.2);
+        }
+      }
+
+
     }
+
+    
 
     // Rotate only the camera pivot (not container)
     if (cameraPivot.current) {
