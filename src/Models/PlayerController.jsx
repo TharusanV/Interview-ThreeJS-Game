@@ -46,7 +46,11 @@ const PlayerController = ({ animationState, setAnimationState }) => {
 
   const [, get] = useKeyboardControls();
         
-  const yaw = useRef(0);                
+  const yaw = useRef(0);      
+  
+  const isAttacking = useRef(false);
+  const nextInput = useRef(null); // for combo logic
+
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -69,6 +73,58 @@ const PlayerController = ({ animationState, setAnimationState }) => {
       document.removeEventListener('click', enablePointerLock);
     };
   }, []);
+
+
+  useEffect(() => {
+    const handleAttack = (anim) => {
+      if (isAttacking.current) {
+        nextInput.current = anim;
+        return;
+      }
+
+      isAttacking.current = true;
+      setAnimationState(anim);
+    };
+
+    const handleKeyDown = (e) => {
+      switch (e.key.toLowerCase()) {
+        case '1':
+          handleAttack('block');
+          break;
+        case '2':
+          handleAttack('elbow');
+          break;
+        case '3':
+          handleAttack('roundHouseKick');
+          break;
+        default:
+          break;
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.key === '1' && animationState === 'block') {
+        isAttacking.current = false;
+        setAnimationState('idle');
+      }
+    };
+
+    const handleMouseDown = (e) => {
+      if (e.button === 0) handleAttack('punch'); // left click
+      if (e.button === 2) handleAttack('hook');  // right click
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('mousedown', handleMouseDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, [animationState, setAnimationState]);
+
 
 
   useFrame(({ camera }) => {
@@ -98,13 +154,32 @@ const PlayerController = ({ animationState, setAnimationState }) => {
         vel.z = moveDirection.z * speed;
       }
 
+      //Move animations
+      if (isAttacking.current === false) {
+        if (movement.x !== 0 || movement.z !== 0) {
+          if (speed === WALK_SPEED) {
+            if (get().forward && get().right) setAnimationState("jogNE");
+            else if (get().forward && get().left) setAnimationState("jogNW");
+            else if (get().backward && get().right) setAnimationState("jogSE");
+            else if (get().backward && get().left) setAnimationState("jogSW");
+            else if (get().forward) setAnimationState("jogForward");
+            else if (get().backward) setAnimationState("jogBackward");
+            else if (get().left) setAnimationState("jogLeft");
+            else if (get().right) setAnimationState("jogRight");
+          }
+        } 
+        else {
+          setAnimationState("idle");
+        }
+      }
+
       rb.current.setLinvel(vel, true);
 
-      //Only rotate player when moving
+      // Only rotate player when moving forward
       if ((movement.x !== 0 || movement.z !== 0) && player.current) {
-        // Skip rotation if stepping backward only
-        const isSteppingBack = movement.z === 1 && movement.x === 0;
-        if (!isSteppingBack) {
+        const isMovingForwardOnly = movement.z === -1 && movement.x === 0;
+
+        if (isMovingForwardOnly) {
           const moveDirection = new Vector3(movement.x, 0, movement.z).normalize();
           moveDirection.applyAxisAngle(new Vector3(0, 1, 0), yaw.current);
 
@@ -116,10 +191,7 @@ const PlayerController = ({ animationState, setAnimationState }) => {
         }
       }
 
-
     }
-
-    
 
     // Rotate only the camera pivot (not container)
     if (cameraPivot.current) {
@@ -146,10 +218,12 @@ const PlayerController = ({ animationState, setAnimationState }) => {
       <group ref={container}>
         <group ref={cameraTarget} position={[0, 1, 0]} />
         <group ref={cameraPivot} position={[0, 0, 0]}>
-          <group ref={cameraPosition} position={[0, 2, 4]} />
+          <group ref={cameraPosition} position={[0, 2, 2]} />
         </group>
         <group ref={player}>
           <Player
+            isAttackingRef={isAttacking}
+            nextInputRef={nextInput}
             animationState={animationState}
             setAnimationState={setAnimationState}
           />

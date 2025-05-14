@@ -5,8 +5,6 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, KeyboardControls} from '@react-three/drei';
 import * as THREE from 'three';
 
-
-import FightKeyBinds from './Models/FightKeyBinds';
 import { Physics, RigidBody } from '@react-three/rapier';
 import PlayerController from './Models/PlayerController';
 
@@ -61,8 +59,6 @@ const App = () => {
 
             <PlayerController animationState={animationState} setAnimationState={setAnimationState}/>
           </Physics>
-
-          <FightKeyBinds setAnimationState={setAnimationState} />
           
         </Suspense>
       </Canvas>

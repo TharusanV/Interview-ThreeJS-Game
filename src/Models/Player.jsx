@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 const FRAME_RATE = 30; // Mixamo default
 
-function Player({ animationState, setAnimationState}) {
+function Player({ isAttackingRef, nextInputRef, animationState, setAnimationState}) {
   const modelRef = useRef();
   const mixerRef = useRef();
 
@@ -17,6 +17,16 @@ function Player({ animationState, setAnimationState}) {
   const punchAtk = useGLTF('/models/PunchAtk_Animation.glb');
   const hookAtk = useGLTF('/models/HookAtk_Animation.glb');
   const roundHouseAtk = useGLTF('/models/RoundhouseAtk_Animation.glb');
+
+  const jogForward = useGLTF('/models/Jog Forward.glb');
+  const jogBackward = useGLTF('/models/Jog Backward.glb');
+  const jogLeft = useGLTF('/models/Jog Left.glb');
+  const jogRight = useGLTF('/models/Jog Right.glb');
+
+  const jogNE = useGLTF('/models/JogNE.glb');
+  const jogNW = useGLTF('/models/JogNW.glb');
+  const jogSE = useGLTF('/models/JogSE.glb');
+  const jogSW = useGLTF('/models/JogSW.glb');
 
   const [actions, setActions] = useState({});
   const [currentAction, setCurrentAction] = useState(null);
@@ -38,6 +48,15 @@ function Player({ animationState, setAnimationState}) {
       punch: mixer.clipAction(punchAtk.animations[0]),
       hook: mixer.clipAction(hookAtk.animations[0]),
       roundHouseKick: mixer.clipAction(roundHouseAtk.animations[0]),
+
+      jogForward: mixer.clipAction(jogForward.animations[0]),
+      jogBackward: mixer.clipAction(jogBackward.animations[0]),
+      jogLeft: mixer.clipAction(jogLeft.animations[0]),
+      jogRight: mixer.clipAction(jogRight.animations[0]),
+      jogNE: mixer.clipAction(jogNE.animations[0]),
+      jogNW: mixer.clipAction(jogNW.animations[0]),
+      jogSE: mixer.clipAction(jogSE.animations[0]),
+      jogSW: mixer.clipAction(jogSW.animations[0]),
     };
 
     setActions(animActions);
@@ -79,7 +98,11 @@ function Player({ animationState, setAnimationState}) {
       }
 
       // Loop logic
-      if (animationState === 'idle' || animationState === 'block') {
+      if (
+        animationState === 'idle' || animationState === 'block' ||
+        animationState === 'jogForward' || animationState === 'jogBackward' || animationState === 'jogLeft' || animationState === 'jogRight' ||
+        animationState === 'jogNE' || animationState === 'jogNW' || animationState === 'jogSE' || animationState === 'jogSW'
+      ) {
         newAction.setLoop(THREE.LoopRepeat);
         newAction.clampWhenFinished = false;
       } 
@@ -89,12 +112,21 @@ function Player({ animationState, setAnimationState}) {
 
         const onFinish = () => {
           console.log("Action finished");
-          setAnimationState('idle');
+
+          isAttackingRef.current = false;
+          
+          if (nextInputRef.current) {
+            const queued = nextInputRef.current;
+            nextInputRef.current = null;
+          } 
+          else {
+            setAnimationState('idle');
+          }
+
           mixer.removeEventListener('finished', onFinish);
         };
 
         mixer.addEventListener('finished', onFinish);
-
       }
 
       newAction.fadeIn(0.2).play();
@@ -112,24 +144,6 @@ function Player({ animationState, setAnimationState}) {
     const action = actions[currentAction];
     if (!action || !action.isRunning()) return;
 
-    if(currentAction == "block"){
-
-    }
-    else if(currentAction == "punch"){
-
-    }
-    else if(currentAction == "hook"){
-
-    }
-    else if(currentAction == "elbow"){
-
-    }
-    else if(currentAction == "roundHouseKick"){
-
-    }
-    else{ //Default is Idle
-
-    }
   });
 
   return (
