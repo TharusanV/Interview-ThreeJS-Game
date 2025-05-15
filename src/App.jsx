@@ -6,7 +6,7 @@ import { OrbitControls, PerspectiveCamera, KeyboardControls} from '@react-three/
 import * as THREE from 'three';
 
 import { Physics, RigidBody } from '@react-three/rapier';
-import PlayerController from './Models/PlayerController';
+import PlayerController from './PlayerFolder/PlayerController';
 
 
 const keyboardMap = [

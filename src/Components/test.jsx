@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 const FRAME_RATE = 30; // Mixamo default
 
-function Player({ isAttackingRef, nextInputRef, animationState, setAnimationState}) {
+function Player({ isAttackingRef, nextInputQueueRef, animationState, setAnimationState}) {
   const modelRef = useRef();
   const mixerRef = useRef();
 
@@ -45,7 +45,8 @@ function Player({ isAttackingRef, nextInputRef, animationState, setAnimationStat
       idle: mixer.clipAction(idle.animations[0]),
       block: mixer.clipAction(block.animations[0]),
       elbow: mixer.clipAction(elbowAtk.animations[0]),
-      punch: mixer.clipAction(punchAtk.animations[0]),
+      punch_1: mixer.clipAction(punchAtk.animations[0]),
+      punch_2: mixer.clipAction(punchAtk.animations[0]),
       hook: mixer.clipAction(hookAtk.animations[0]),
       roundHouseKick: mixer.clipAction(roundHouseAtk.animations[0]),
 
@@ -65,6 +66,20 @@ function Player({ isAttackingRef, nextInputRef, animationState, setAnimationStat
       mixer.stopAllAction();
     };
   }, [base, idle, block, elbowAtk, punchAtk, hookAtk]);
+
+  useEffect(() => {
+    base.scene.traverse((child) => {
+      if (child.isMesh) {
+        child.material = new THREE.MeshPhysicalMaterial({
+          color: '#ff0000',
+          roughness: 0.1,
+          metalness: 0.9,
+          clearcoat: 1,
+          clearcoatRoughness: 0.05,
+        });
+      }
+    });
+  }, [base]);
 
   //Shadows
   useEffect(() => {
@@ -88,12 +103,14 @@ function Player({ isAttackingRef, nextInputRef, animationState, setAnimationStat
 
     if (animationState !== currentAction && newAction) {
       prevAction?.fadeOut(0.2);
+
       newAction.reset();
 
       //Animation speed
       if (animationState === 'punch' || animationState === 'hook') {
         newAction.timeScale = 1.2; 
-      } else {
+      } 
+      else {
         newAction.timeScale = 1.0; // normal speed
       }
 
@@ -111,21 +128,18 @@ function Player({ isAttackingRef, nextInputRef, animationState, setAnimationStat
         newAction.clampWhenFinished = true;
 
         const onFinish = () => {
-          console.log("Action finished");
+          mixer.removeEventListener('finished', onFinish);
 
-          isAttackingRef.current = false;
-          
-          if (nextInputRef.current) {
-            const queued = nextInputRef.current;
-            nextInputRef.current = null;
+          if (nextInputQueueRef.current.length > 0) {
+            const next = nextInputQueueRef.current.shift(); // dequeue
+            setAnimationState(next);
           } 
           else {
+            isAttackingRef.current = false;
             setAnimationState('idle');
           }
-
-          mixer.removeEventListener('finished', onFinish);
         };
-
+        
         mixer.addEventListener('finished', onFinish);
       }
 
@@ -133,8 +147,6 @@ function Player({ isAttackingRef, nextInputRef, animationState, setAnimationStat
       setCurrentAction(animationState);
     }
   }, [animationState, actions, currentAction]);
-
-
 
 
   // Update animation frame

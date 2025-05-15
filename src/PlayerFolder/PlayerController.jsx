@@ -49,8 +49,8 @@ const PlayerController = ({ animationState, setAnimationState }) => {
   const yaw = useRef(0);      
   
   const isAttacking = useRef(false);
-  const nextInput = useRef(null); // for combo logic
-
+  const nextInputQueue = useRef([]); // for combo logic
+  const punchToggle = useRef(true);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -77,14 +77,22 @@ const PlayerController = ({ animationState, setAnimationState }) => {
 
   useEffect(() => {
     const handleAttack = (anim) => {
+      let animName = anim;
+
+      if (anim === 'punch') {
+        animName = punchToggle.current ? 'punch_1' : 'punch_2';
+        punchToggle.current = !punchToggle.current;
+      }
+
       if (isAttacking.current) {
-        nextInput.current = anim;
+        nextInputQueue.current.push(animName);
         return;
       }
 
       isAttacking.current = true;
-      setAnimationState(anim);
+      setAnimationState(animName);
     };
+
 
     const handleKeyDown = (e) => {
       switch (e.key.toLowerCase()) {
@@ -110,7 +118,7 @@ const PlayerController = ({ animationState, setAnimationState }) => {
     };
 
     const handleMouseDown = (e) => {
-      if (e.button === 0) handleAttack('punch'); // left click
+      if (e.button === 0) handleAttack("punch"); // left click
       if (e.button === 2) handleAttack('hook');  // right click
     };
 
@@ -223,7 +231,7 @@ const PlayerController = ({ animationState, setAnimationState }) => {
         <group ref={player}>
           <Player
             isAttackingRef={isAttacking}
-            nextInputRef={nextInput}
+            nextInputQueueRef={nextInputQueue}
             animationState={animationState}
             setAnimationState={setAnimationState}
           />
