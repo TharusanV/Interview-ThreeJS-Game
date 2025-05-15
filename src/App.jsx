@@ -1,12 +1,13 @@
 import './App.css'
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, KeyboardControls} from '@react-three/drei';
 import * as THREE from 'three';
 
 import { Physics, RigidBody } from '@react-three/rapier';
 import PlayerController from './PlayerFolder/PlayerController';
+import BasicEnemyController from './Enemies/BasicEnemyController';
 
 
 const keyboardMap = [
@@ -19,8 +20,7 @@ const keyboardMap = [
 
 const App = () => {
   const [cameraPosition, setCameraPosition] = useState([0.2, 0.8, 1.2]); // Starting camera position
-  const [animationState, setAnimationState] = useState('idle');
-  const [runningAttackAnimation, setRunningAttackAnimation] = useState(false);
+  const playerRef = useRef()
 
   return (
     <KeyboardControls map={keyboardMap}>
@@ -46,18 +46,10 @@ const App = () => {
                 <meshStandardMaterial color="white" />
               </mesh>
             </RigidBody>
-
-            {/* Falling object */}
-            {/*
-            <RigidBody>
-              <mesh castShadow position={[0, 12, 0]}>
-                <boxGeometry args={[1, 1, 1]} />
-                <meshStandardMaterial color="hotpink" />
-              </mesh>
-            </RigidBody>
-            */}
-
-            <PlayerController animationState={animationState} setAnimationState={setAnimationState}/>
+            
+            <PlayerController ref={playerRef} />
+            <BasicEnemyController position={[0, 0, -3]} playerRef={playerRef} />
+            
           </Physics>
           
         </Suspense>

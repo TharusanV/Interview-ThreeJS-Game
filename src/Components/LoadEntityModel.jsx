@@ -3,6 +3,8 @@ import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils';
+
 const FRAME_RATE = 30; // Mixamo default
 
 const LoadEntityModel = ({
@@ -22,7 +24,7 @@ const LoadEntityModel = ({
   const [actions, setActions] = useState({});
   const [currentAction, setCurrentAction] = useState(null);
 
-  const baseModel = useGLTF(modelUrlPath+"base.glb");
+  const baseModel = useGLTF(modelUrlPath + 'base.glb');
   const idle = useGLTF(modelUrlPath+'Idle_Animation.glb');
   const block = useGLTF(modelUrlPath+'BoxingIdle_Animation.glb');
   const elbowAtk = useGLTF(modelUrlPath+'ElbowAtk_Animation.glb');
@@ -40,13 +42,18 @@ const LoadEntityModel = ({
   const jogSE = useGLTF(modelUrlPath+'JogSE.glb');
   const jogSW = useGLTF(modelUrlPath+'JogSW.glb');
 
+
+  // Clone the model so each entity has its own scene graph
+  const clonedScene = useMemo(() => {
+    return baseModel?.scene ? clone(baseModel.scene) : null;
+  }, [baseModel.scene]);
+
+
   // Setup mixer and actions
   useEffect(() => {
-    if (!baseModel) return;
+    if (!clonedScene) return;
 
-    // Create mixer on model
-    const model = baseModel.scene;
-    const mixer = new THREE.AnimationMixer(model);
+    const mixer = new THREE.AnimationMixer(clonedScene); // Use cloned scene
     mixerRef.current = mixer;
 
     // Map of animation actions
@@ -70,8 +77,8 @@ const LoadEntityModel = ({
     };
 
     // Increase punch speed
-    animActions.punch_1.setEffectiveTimeScale(2.0);
-    animActions.punch_2.setEffectiveTimeScale(2.0);
+    animActions.punch_1.setEffectiveTimeScale(1.5);
+    animActions.hook.setEffectiveTimeScale(1.5);
 
     setActions(animActions);
 
@@ -79,7 +86,7 @@ const LoadEntityModel = ({
       mixer.stopAllAction();
     };
   // Only rerun if baseModel or animationClips *actually* change
-  }, [baseModel]);
+  }, [clonedScene]);
 
   // Material override
   useEffect(() => {
@@ -122,7 +129,7 @@ const LoadEntityModel = ({
 
       newAction.reset();
 
-      console.log(animationState);
+      //console.log(animationState);
 
       if (['idle', 'block', 'jogForward', 'jogBackward', 'jogLeft', 'jogRight', 'jogNE', 'jogNW', 'jogSE', 'jogSW'].includes(animationState)) {
         newAction.setLoop(THREE.LoopRepeat);
@@ -162,11 +169,12 @@ const LoadEntityModel = ({
   return (
     <primitive
       ref={modelRef}
-      object={baseModel.scene}
+      object={clonedScene}
       position={position}
       rotation={rotation}
       scale={scale}
     />
+
   );
 }
 

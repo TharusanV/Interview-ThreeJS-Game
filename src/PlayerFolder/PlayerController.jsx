@@ -31,10 +31,13 @@ const lerpAngle = (start, end, t) => {
   return normalizeAngle(start + (end - start) * t);
 };
 
-const PlayerController = ({ animationState, setAnimationState }) => {
+const PlayerController = (props) => {
+   const { ref: playerRef } = props;
+
+  const [animationState, setAnimationState] = useState('idle');
+
   const rb = useRef();
   const container = useRef();
-  const player = useRef();
 
   const cameraTarget = useRef();
   const cameraPivot = useRef();        
@@ -184,7 +187,7 @@ const PlayerController = ({ animationState, setAnimationState }) => {
       rb.current.setLinvel(vel, true);
 
       // Only rotate player when moving forward
-      if ((movement.x !== 0 || movement.z !== 0) && player.current) {
+      if ((movement.x !== 0 || movement.z !== 0) && playerRef.current) {
         const isMovingForwardOnly = movement.z === -1 && movement.x === 0;
 
         if (isMovingForwardOnly) {
@@ -194,8 +197,8 @@ const PlayerController = ({ animationState, setAnimationState }) => {
           let targetAngle = Math.atan2(moveDirection.x, moveDirection.z);
           targetAngle += Math.PI; // compensate for model's base rotation
 
-          const currentRotationY = player.current.rotation.y;
-          player.current.rotation.y = lerpAngle(currentRotationY, targetAngle, 0.2);
+          const currentRotationY = playerRef.current.rotation.y;
+          playerRef.current.rotation.y = lerpAngle(currentRotationY, targetAngle, 0.2);
         }
       }
 
@@ -228,7 +231,7 @@ const PlayerController = ({ animationState, setAnimationState }) => {
         <group ref={cameraPivot} position={[0, 0, 0]}>
           <group ref={cameraPosition} position={[0, 2, 2]} />
         </group>
-        <group ref={player}>
+        <group ref={playerRef}>
           <Player
             isAttackingRef={isAttacking}
             nextInputQueueRef={nextInputQueue}

@@ -1,12 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useGLTF } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import LoadEntityModel from '../Components/LoadEntityModel'; 
 
-const FRAME_RATE = 30; // Mixamo default
-const BasicEnemy = () => {
+const BasicEnemy = ({
+  isAttackingRef,
+  nextInputQueueRef,
+  animationState,
+  setAnimationState,
+  position,
+}) => {
   return (
-    <div>BasicEnemy</div>
+    <LoadEntityModel
+      modelUrlPath="/models/"
+      animationState={animationState}
+      setAnimationState={setAnimationState}
+      isAttackingRef={isAttackingRef}
+      nextInputQueueRef={nextInputQueueRef}
+      color="#ff0000"
+      position={position}
+      rotation={[0, -Math.PI, 0]}
+      scale={[0.3, 0.3, 0.3]}
+    />
   )
 }
 
