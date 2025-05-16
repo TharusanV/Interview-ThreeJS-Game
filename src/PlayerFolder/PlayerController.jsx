@@ -225,7 +225,7 @@ const PlayerController = (props) => {
   });
 
   return (
-    <RigidBody ref={rb} colliders={false} lockRotations>
+    <RigidBody ref={rb} colliders={false} lockRotations name="Player">
       <group ref={container}>
         <group ref={cameraTarget} position={[0, 1, 0]} />
         <group ref={cameraPivot} position={[0, 0, 0]}>
@@ -241,6 +241,15 @@ const PlayerController = (props) => {
         </group>
       </group>
       <CapsuleCollider args={[0.7, 0.3]} position={[0, 1, 0]} />
+      <CapsuleCollider
+        args={[0.25, 0.2]}               
+        position={[0, 1.4, -0.5]}      
+        rotation={[ -Math.PI/2, 0, 0]}           
+        sensor                          // THIS makes it non-colliding
+        onIntersectionEnter={({ other }) => {
+          console.log('Hand hit something:', other);
+        }}
+      />
     </RigidBody>
   );
 };
