@@ -1,53 +1,51 @@
+import LoadEntityModel from '../Components/LoadEntityModel'; 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils';
-
 const FRAME_RATE = 30; // Mixamo default
 
-const LoadEntityModel = ({
-  modelUrlPath,
-  animationState, 
-  setAnimationState,
-  isAttackingRef, isDamagedRef, nextInputQueueRef, 
-  color = '#ff0000',
-  position = [0, 0, 0],
-  rotation = [0, 0, 0],
-  scale = [1, 1, 1],
+const Player = ({
+  isAttackingRef,
+  nextInputQueueRef,
+  animationState,
+  setAnimationState
 }) => {
-  
+
   const modelRef = useRef();
   const mixerRef = useRef();
 
   const [actions, setActions] = useState({});
   const [currentAction, setCurrentAction] = useState(null);
 
-  const baseModel = useGLTF(modelUrlPath + 'base.glb');
-  const idle = useGLTF(modelUrlPath+'Idle_Animation.glb');
-  const block = useGLTF(modelUrlPath+'BoxingIdle_Animation.glb');
-  const elbowAtk = useGLTF(modelUrlPath+'ElbowAtk_Animation.glb');
-  const punchAtk = useGLTF(modelUrlPath+'PunchAtk_Animation.glb');
-  const hookAtk = useGLTF(modelUrlPath+'HookAtk_Animation.glb');
-  const roundHouseAtk = useGLTF(modelUrlPath+'RoundhouseAtk_Animation.glb');
+  const modelPosition = [-0.5, 0, 0];
+  const modelRotation = [0, -Math.PI, 0];
+  const modelScale = [0.4, 0.35, 0.4];
 
-  const jogForward = useGLTF(modelUrlPath+'Jog Forward.glb');
-  const jogBackward = useGLTF(modelUrlPath+'Jog Backward.glb');
-  const jogLeft = useGLTF(modelUrlPath+'Jog Left.glb');
-  const jogRight = useGLTF(modelUrlPath+'Jog Right.glb');
+  const baseModel = useGLTF('/models/base.glb');
+  const idle = useGLTF('/models/Orc Idle.glb');
+  const block = useGLTF('/models/BoxingIdle_Animation.glb');
+  const elbowAtk = useGLTF('/models/ElbowAtk_Animation.glb');
+  const punchAtk = useGLTF('/models/PunchAtk_Animation.glb');
+  const hookAtk = useGLTF('/models/HookAtk_Animation.glb');
+  const roundHouseAtk = useGLTF('/models/RoundhouseAtk_Animation.glb');
 
-  const jogNE = useGLTF(modelUrlPath+'JogNE.glb');
-  const jogNW = useGLTF(modelUrlPath+'JogNW.glb');
-  const jogSE = useGLTF(modelUrlPath+'JogSE.glb');
-  const jogSW = useGLTF(modelUrlPath+'JogSW.glb');
+  const jogForward = useGLTF('/models/Jog Forward.glb');
+  const jogBackward = useGLTF('/models/Jog Backward.glb');
+  const jogLeft = useGLTF('/models/Jog Left.glb');
+  const jogRight = useGLTF('/models/Jog Right.glb');
 
+  const jogNE = useGLTF('/models/JogNE.glb');
+  const jogNW = useGLTF('/models/JogNW.glb');
+  const jogSE = useGLTF('/models/JogSE.glb');
+  const jogSW = useGLTF('/models/JogSW.glb');
 
   // Clone the model so each entity has its own scene graph
   const clonedScene = useMemo(() => {
     return baseModel?.scene ? clone(baseModel.scene) : null;
   }, [baseModel.scene]);
-
 
   // Setup mixer and actions
   useEffect(() => {
@@ -90,23 +88,24 @@ const LoadEntityModel = ({
 
   // Material override
   useEffect(() => {
-    if (!baseModel) return;
-    baseModel.scene.traverse(child => {
+  if (!clonedScene) return;
+    clonedScene.traverse(child => {
       if (child.isMesh) {
         child.material = new THREE.MeshPhysicalMaterial({
-          color,
-          roughness: 0.1,
-          metalness: 0.9,
+          color: new THREE.Color('#d83333'),
+          roughness: 0.21,
+          metalness: 1,
           clearcoat: 1,
           clearcoatRoughness: 0.05,
         });
       }
     });
-  }, [baseModel, color]);
+  }, [clonedScene]);
+
   
   // Shadows
   useEffect(() => {
-    if (!baseModel) return;
+    if (!clonedScene) return;
     baseModel.scene.traverse(child => {
       if (child.isMesh) {
         child.castShadow = true;
@@ -170,12 +169,12 @@ const LoadEntityModel = ({
     <primitive
       ref={modelRef}
       object={clonedScene}
-      position={position}
-      rotation={rotation}
-      scale={scale}
+      position={modelPosition}
+      rotation={modelRotation}
+      scale={modelScale}
     />
 
   );
 }
 
-export default LoadEntityModel;
+export default Player;

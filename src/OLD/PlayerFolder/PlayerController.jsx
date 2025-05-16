@@ -69,7 +69,7 @@ const PlayerController = () => {
   useEffect(() => {
     const handleMouseMove = (e) => {
       const deltaX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
-      yawRef.current -= deltaX * 0.002; // sensitivity adjustment
+      yawRef.current -= deltaX * 0.001; // sensitivity adjustment
     };
 
     const enablePointerLock = () => {
@@ -218,9 +218,9 @@ const PlayerController = () => {
   return (
     <RigidBody ref={rb} colliders={false} lockRotations name="Player">
       <group ref={container}>
-        <group ref={cameraTargetRef} position={[0, 1, 0]} />
+        <group ref={cameraTargetRef} position={[0, 1.2, -2]} />
         <group ref={cameraPivotRef} position={[0, 0, 0]}>
-          <group ref={cameraPositionRef} position={[0, 2, 2]} />
+          <group ref={cameraPositionRef} position={[-0.1, 2.2, 0.8]} />
         </group>
         <group ref={playerRef}>
           <Player
@@ -238,7 +238,7 @@ const PlayerController = () => {
       />
 
       <CapsuleCollider
-        args={[0.25, 0.2]}               
+        args={[0.25, 0.20]}               
         position={[0, 1.4, -0.5]}      
         rotation={[ -Math.PI/2, 0, 0]}           
         sensor                          // THIS makes it non-colliding

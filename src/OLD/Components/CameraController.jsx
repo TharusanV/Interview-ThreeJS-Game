@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { useControls } from "leva";
 import { Vector3, MathUtils } from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
-import { useZustandStore } from '../Components/useZustandStore';
+import { useZustandStore } from './useZustandStore';
 
 const CameraController = () => {
   const cameraTargetRef = useZustandStore((state) => state.cameraTargetRef);
@@ -18,6 +18,7 @@ const CameraController = () => {
 
   useFrame(({ camera }) => {
     // CAMERA ROTATION - Rotate only the camera pivot (not container)
+    /*
     if (cameraPivotRef.current) {
       cameraPivotRef.current.rotation.y = MathUtils.lerp(
         cameraPivotRef.current.rotation.y,
@@ -25,7 +26,8 @@ const CameraController = () => {
         0.1
       );
     }
-
+    */
+   
     // Camera movement
     cameraPositionRef.current.getWorldPosition(cameraWorldPosition.current);
     camera.position.lerp(cameraWorldPosition.current, 0.1);
