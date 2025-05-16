@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { Physics, RigidBody } from '@react-three/rapier';
 import PlayerController from './PlayerFolder/PlayerController';
 import BasicEnemyController from './Enemies/BasicEnemyController';
+import CameraController from './Components/CameraController';
 
 
 const keyboardMap = [
@@ -19,13 +20,13 @@ const keyboardMap = [
 ];
 
 const App = () => {
-  const [cameraPosition, setCameraPosition] = useState([0.2, 0.8, 1.2]); // Starting camera position
-  const playerRef = useRef()
-
+  
+  
   return (
     <KeyboardControls map={keyboardMap}>
-      <Canvas shadows camera={cameraPosition} fov={10}>
+      <Canvas shadows camera={[0.2, 0.8, 1.2]} fov={10}>
         <Suspense fallback={null}>
+          <CameraController/>
 
           {/* Lighting */}
           <ambientLight intensity={0.3} />
@@ -42,13 +43,13 @@ const App = () => {
             {/* Ground */}
             <RigidBody type="fixed" colliders="trimesh">
               <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
-                <planeGeometry args={[10, 10]} />
+                <planeGeometry args={[50, 50]} />
                 <meshStandardMaterial color="white" />
               </mesh>
             </RigidBody>
             
-            <PlayerController ref={playerRef} />
-            <BasicEnemyController position={[0, 0, -3]} playerRef={playerRef} />
+            <PlayerController />
+            {/*<BasicEnemyController position={[0, 0, -3]} />*/}
             
           </Physics>
           

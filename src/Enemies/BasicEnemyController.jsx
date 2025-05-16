@@ -3,8 +3,11 @@ import { CapsuleCollider, RigidBody } from '@react-three/rapier';
 import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Vector3, MathUtils } from "three";
+import { useZustandStore } from '../Components/useZustandStore';
 
-const BasicEnemyController = ({ position, playerRef }) => {
+const BasicEnemyController = ({ position }) => {
+  const playerRef = useZustandStore((state) => state.playerRef);
+
   const [animationState, setAnimationState] = useState('idle');
 
   const canMoveRef = useRef(false);   

@@ -6,8 +6,9 @@ import { useFrame } from '@react-three/fiber';
 import { useControls } from "leva";
 import { Vector3, MathUtils } from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
+import { useZustandStore } from '../Components/useZustandStore';
 
-const WALK_SPEED = 0.8;
+const WALK_SPEED = 2.8;
 const RUN_SPEED = 1.6;
 
 const normalizeAngle = (angle) => {
@@ -31,26 +32,36 @@ const lerpAngle = (start, end, t) => {
   return normalizeAngle(start + (end - start) * t);
 };
 
-const PlayerController = (props) => {
-   const { ref: playerRef } = props;
+const PlayerController = () => {
+  const playerRef = useRef()
+  const cameraTargetRef = useRef();
+  const cameraPivotRef = useRef();        
+  const cameraPositionRef = useRef();
+  const yawRef = useRef(0);
+
+  const setPlayerRef = useZustandStore((state) => state.setPlayerRef);
+  const setCameraTargetRef = useZustandStore((state) => state.setCameraTargetRef);
+  const setCameraPivotRef = useZustandStore((state) => state.setCameraPivotRef);
+  const setCameraPositionRef = useZustandStore((state) => state.setCameraPositionRef);
+  const setYawRef = useZustandStore((state) => state.setYawRef);
+
+
+  useEffect(() => {
+    setPlayerRef(playerRef); // Assign the playerRef globally once mounted
+    setCameraTargetRef(cameraTargetRef);
+    setCameraPivotRef(cameraPivotRef);
+    setCameraPositionRef(cameraPositionRef);
+    setYawRef(yawRef);
+  }, []);
+
 
   const [animationState, setAnimationState] = useState('idle');
 
   const rb = useRef();
   const container = useRef();
 
-  const cameraTarget = useRef();
-  const cameraPivot = useRef();        
-  const cameraPosition = useRef();
-
-  const cameraWorldPosition = useRef(new Vector3());
-  const cameraLookAtWorldPosition = useRef(new Vector3());
-  const cameraLookAt = useRef(new Vector3());
-
   const [, get] = useKeyboardControls();
         
-  const yaw = useRef(0);      
-  
   const isAttacking = useRef(false);
   const nextInputQueue = useRef([]); // for combo logic
   const punchToggle = useRef(true);
@@ -58,7 +69,7 @@ const PlayerController = (props) => {
   useEffect(() => {
     const handleMouseMove = (e) => {
       const deltaX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
-      yaw.current -= deltaX * 0.002; // sensitivity adjustment
+      yawRef.current -= deltaX * 0.002; // sensitivity adjustment
     };
 
     const enablePointerLock = () => {
@@ -138,7 +149,7 @@ const PlayerController = (props) => {
 
 
 
-  useFrame(({ camera }) => {
+  useFrame(() => {
     // Movement
     if (rb.current) {
       const vel = rb.current.linvel();
@@ -156,7 +167,7 @@ const PlayerController = (props) => {
         // Create a quaternion from the camera's Y rotation (yaw)
         const cameraYaw = new Vector3(0, 1, 0);
         const rotation = new Vector3(0, 0, 0);
-        rotation.y = yaw.current;
+        rotation.y = yawRef.current;
 
         // Rotate movement vector by yaw
         moveDirection.applyAxisAngle(cameraYaw, rotation.y);
@@ -192,7 +203,7 @@ const PlayerController = (props) => {
 
         if (isMovingForwardOnly) {
           const moveDirection = new Vector3(movement.x, 0, movement.z).normalize();
-          moveDirection.applyAxisAngle(new Vector3(0, 1, 0), yaw.current);
+          moveDirection.applyAxisAngle(new Vector3(0, 1, 0), yawRef.current);
 
           let targetAngle = Math.atan2(moveDirection.x, moveDirection.z);
           targetAngle += Math.PI; // compensate for model's base rotation
@@ -201,35 +212,15 @@ const PlayerController = (props) => {
           playerRef.current.rotation.y = lerpAngle(currentRotationY, targetAngle, 0.2);
         }
       }
-
-    }
-
-    // Rotate only the camera pivot (not container)
-    if (cameraPivot.current) {
-      cameraPivot.current.rotation.y = MathUtils.lerp(
-        cameraPivot.current.rotation.y,
-        yaw.current,
-        0.1
-      );
-    }
-
-    // Camera movement
-    cameraPosition.current.getWorldPosition(cameraWorldPosition.current);
-    camera.position.lerp(cameraWorldPosition.current, 0.1);
-
-    if (cameraTarget.current) {
-      cameraTarget.current.getWorldPosition(cameraLookAtWorldPosition.current);
-      cameraLookAt.current.lerp(cameraLookAtWorldPosition.current, 0.1);
-      camera.lookAt(cameraLookAt.current);
     }
   });
 
   return (
     <RigidBody ref={rb} colliders={false} lockRotations name="Player">
       <group ref={container}>
-        <group ref={cameraTarget} position={[0, 1, 0]} />
-        <group ref={cameraPivot} position={[0, 0, 0]}>
-          <group ref={cameraPosition} position={[0, 2, 2]} />
+        <group ref={cameraTargetRef} position={[0, 1, 0]} />
+        <group ref={cameraPivotRef} position={[0, 0, 0]}>
+          <group ref={cameraPositionRef} position={[0, 2, 2]} />
         </group>
         <group ref={playerRef}>
           <Player
@@ -240,7 +231,12 @@ const PlayerController = (props) => {
           />
         </group>
       </group>
-      <CapsuleCollider args={[0.7, 0.3]} position={[0, 1, 0]} />
+
+      <CapsuleCollider 
+        args={[0.7, 0.3]} 
+        position={[0, 1, 0]} 
+      />
+
       <CapsuleCollider
         args={[0.25, 0.2]}               
         position={[0, 1.4, -0.5]}      
