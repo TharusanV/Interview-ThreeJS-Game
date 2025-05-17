@@ -1,43 +1,38 @@
 import './App.css'
 
 import React, { Suspense, useState, useEffect, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, KeyboardControls, Stats} from '@react-three/drei';
-import * as THREE from 'three';
+import { Canvas, useFrame, useThree  } from '@react-three/fiber';
+import { OrbitControls, PerspectiveCamera, Stats, Sphere, Box } from '@react-three/drei';
+import { AxesHelper, Vector3  } from 'three';
 
 import { Physics, RigidBody } from '@react-three/rapier';
 import Map from './Entities/Map';
-import CameraRig from './Entities/CameraRig';
-import Box from './Entities/Box';
-import { useGameStore } from './Entities/useGameStore';
-import ModelWithSize from './Entities/ModelWithSize';
 
-const keyboardMap = [
-  { name: "forward", keys: ["ArrowUp", "KeyW"] },
-  { name: "backward", keys: ["ArrowDown", "KeyS"] },
-  { name: "left", keys: ["ArrowLeft", "KeyA"] },
-  { name: "right", keys: ["ArrowRight", "KeyD"] },
-  { name: "run", keys: ["Shift"] },
-];
+import ModelWithSize from './Utils/ModelWithSize';
+import Player from './Entities/Player/Player';
+import ThirdPersonCamera from './Cameras/ThirdPersonCamera';
 
 const App = () => {  
 
-  return (
-    <KeyboardControls map={keyboardMap}>
-      <Canvas camera={{ position: [0, 2, 5], fov: 70 }}>
-        
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 10, 5]} intensity={1} />
-        
-        <CameraRig />
-        
-        <Box />
+  
 
-        <gridHelper args={[50, 50]} />
-        <Stats />
-      </Canvas>
-    </KeyboardControls>
-    
+  return (
+    <Canvas>
+      <PerspectiveCamera makeDefault position={[0, 0, 1]} fov={70}/>
+      <ThirdPersonCamera />
+
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[0, 10, 10]} intensity={1} />
+      
+      
+      <Physics gravity={[0, -9.81, 0]} debug>
+        <Map/>
+        <Player/>
+      </Physics>
+      
+      <Stats />
+      
+    </Canvas>
   )
 }
 

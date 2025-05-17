@@ -8,8 +8,11 @@ const Map = () => {
         <planeGeometry args={[50, 50]} />
         <meshStandardMaterial color="white" />
       </mesh>
+     
     </RigidBody>
   )
 }
+
+// <gridHelper args={[50, 50]} />
 
 export default Map
