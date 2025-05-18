@@ -1,37 +1,36 @@
 import './App.css'
 
-import React, { Suspense, useState, useEffect, useRef } from 'react';
-import { Canvas, useFrame, useThree  } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Stats, Sphere, Box } from '@react-three/drei';
-import { AxesHelper, Vector3  } from 'three';
+import React from 'react'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
+import { AxesHelper } from 'three'
 
-import { Physics, RigidBody } from '@react-three/rapier';
-import Map from './Entities/Map';
+import { InterogationRoom } from './MapObj/InterogationRoom'
+import { Subway } from './MapObj/Subway'
 
-import ModelWithSize from './Utils/ModelWithSize';
-import Player from './Entities/Player/Player';
-import ThirdPersonCamera from './Cameras/ThirdPersonCamera';
+function Helpers() {
+  return <primitive object={new AxesHelper(5)} />
+}
 
-const App = () => {  
-
-  
-
+const App = () => {
   return (
-    <Canvas>
-      <PerspectiveCamera makeDefault position={[0, 0, 1]} fov={70}/>
-      <ThirdPersonCamera />
+    <Canvas shadows>
+      <PerspectiveCamera makeDefault position={[8, 0, 5]} fov={70} />
+      <OrbitControls target={[10, 2, 0]} />
 
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[0, 10, 10]} intensity={1} />
-      
-      
-      <Physics gravity={[0, -9.81, 0]} debug>
-        <Map/>
-        <Player/>
-      </Physics>
-      
-      <Stats />
-      
+      <ambientLight intensity={0.3} color="#ffffff" />
+      <directionalLight
+        position={[10, 10, 10]}
+        intensity={1}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-radius={4}
+      />
+
+      <Helpers />
+
+      <Subway rotation={[0, 0, 0]} position={[0, 0, 0]} scale={1} />
     </Canvas>
   )
 }
