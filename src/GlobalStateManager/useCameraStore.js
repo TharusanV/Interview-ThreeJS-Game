@@ -4,5 +4,4 @@ export const useCameraStore = create((set) => ({
   cameraMode: 'movement',
   setCameraMode: (mode) => set({ cameraMode: mode }),
 
-  angleYRef: { current: 0 },
 }));

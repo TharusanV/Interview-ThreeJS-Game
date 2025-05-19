@@ -15,108 +15,39 @@ export function Subway(props) {
   return (
     <group {...props} dispose={null}>
       <group rotation={[-Math.PI / 2, 0, 0]}>
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_2.geometry}
-          material={materials.Sleepsack}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_3.geometry}
-          material={materials.blueprint}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_4.geometry}
-          material={materials['3rd_rail']}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_5.geometry}
-          material={materials.Material}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_6.geometry}
-          material={materials.SIGNS}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_7.geometry}
-          material={materials.Ticket}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_8.geometry}
-          material={materials.Trashcanbreak}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_9.geometry}
-          material={materials.base}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_10.geometry}
-          material={materials.bench}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_11.geometry}
-          material={materials.checker}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_12.geometry}
-          material={materials['checker.001']}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_13.geometry}
-          material={materials['checker.002']}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_14.geometry}
-          material={materials['checker.003']}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_15.geometry}
-          material={materials.lights}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_16.geometry}
-          material={materials.pillars}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_17.geometry}
-          material={materials.rail}
-        />
-        <mesh
-          castShadow
-          receiveShadow
-          geometry={nodes.Object_18.geometry}
-          material={materials.vendingmachine}
-        />
+        {/* Sleepsack */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_2.geometry} material={superhotWhiteMaterial} />
+        
+        {/* 3rd_rail */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_4.geometry} material={superhotWhiteMaterial} />
+        {/* Material */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_5.geometry} material={superhotWhiteMaterial} />
+        {/* SIGNS */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_6.geometry} material={superhotWhiteMaterial} />
+        {/* Ticket */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_7.geometry} material={superhotWhiteMaterial} />
+        {/* Trashcanbreak */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_8.geometry} material={superhotWhiteMaterial} />
+        {/* base */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_9.geometry} material={superhotWhiteMaterial} />
+        {/* bench */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_10.geometry} material={superhotWhiteMaterial} />
+        {/* checker */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_11.geometry} material={superhotWhiteMaterial} />
+        {/* checker.001 */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_12.geometry} material={superhotWhiteMaterial} />
+        {/* checker.002 */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_13.geometry} material={superhotWhiteMaterial} />
+        {/* checker.003 */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_14.geometry} material={superhotWhiteMaterial} />
+        {/* lights */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_15.geometry} material={superhotWhiteMaterial} />
+        {/* pillars */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_16.geometry} material={superhotWhiteMaterial} />
+        {/* rail */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_17.geometry} material={superhotWhiteMaterial} />
+        {/* vendingmachine */}
+        <mesh castShadow receiveShadow geometry={nodes.Object_18.geometry} material={superhotWhiteMaterial} />
       </group>
     </group>
   )
