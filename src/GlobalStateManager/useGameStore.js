@@ -1,6 +1,29 @@
 import { create } from 'zustand'
+import { subscribeWithSelector } from "zustand/middleware";
 
-export const useGameStore = create((set) => ({
-  canMove: true, 
-  setCanMove: (canMove) => set({ canMove }),
-}));
+export const gameStates = { //Enum
+  MENU: "MENU",
+  INGAME: "INGAME",
+  GAMEOVER: "GAMEOVER",
+};
+
+export const useGameStore = create(
+  subscribeWithSelector((set, get) => ({
+    //STATES
+    canMove: false, 
+    isPaused: false,
+    gameState: gameStates.MENU,
+
+    // Actions
+    setCanMove: (canMove) => set({ canMove }),
+    
+    setGameState: (state) => set({ gameState: state }),
+    pauseGame: () => {
+      set({ isPaused: true, canMove: false });
+    },
+    resumeGame: () => {
+      set({ isPaused: false, canMove: true });
+    }
+
+  }))
+);

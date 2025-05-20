@@ -1,96 +1,134 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react'
-import { useGLTF } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
-import { clone } from 'three/examples/jsm/utils/SkeletonUtils'
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useGLTF } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils';
 
-// Paths
-const MODEL_PATH = '/models/Character/char.glb'
-const ANIM_PATHS = {
-  idle: '/models/Anima/Orc Idle.glb',
-  run: '/models/Anim/Jog.glb',
-  attack: '/models/Anim/PunchAtk.glb',
-}
+// Config
+const modelPosition = [0, 0.1, 1.5];
+const modelRotation = [0, -Math.PI, 0];
+const modelScale = [0.25, 0.25, 0.25];
 
-const CharacterModel = ({ showHead = true, animation = 'idle', position = [0, 0, 0] }) => {
-  const group = useRef()
-  const mixer = useRef()
-  const [actions, setActions] = useState({})
-  const [currentAction, setCurrentAction] = useState(null)
+const CharacterModel = ({}) => {
+  const modelRef = useRef();
+  const mixerRef = useRef();
 
-  // Load base character model
-  const base = useGLTF(MODEL_PATH)
+  const isAttackingRef = useRef(false);
+  const nextInputQueueRef = useRef([]); 
+  const [animationState, setAnimationState] = useState('idle');
+  const [showHead, setShowHead] = useState(true);
 
-  // Load animation clips from separate GLBs
-  const animIdle = useGLTF(ANIM_PATHS.idle)
-  const animRun = useGLTF(ANIM_PATHS.run)
-  const animAttack = useGLTF(ANIM_PATHS.attack)
+  const [actions, setActions] = useState({});
+  const [currentAction, setCurrentAction] = useState(null);
 
-  // Clone so each instance has its own rig
-  const cloned = useMemo(() => (base.scene ? clone(base.scene) : null), [base.scene])
+  // Load model (no animations)
+  const baseModel = useGLTF('/models/Character/char.glb');
 
-  // Setup mixer & bind animations
+  // Load animations separately
+  const idle = useGLTF('/models/Character/Anim/OrcIdle.glb');
+  const jogForward = useGLTF('/models/Character/Anim/Jog.glb');
+
+  // Clone the model (deep clone of skinned mesh and skeleton)
+  const clonedScene = useMemo(() => {
+    return baseModel?.scene ? clone(baseModel.scene) : null;
+  }, [baseModel.scene]);
+
+  // Setup mixer and actions
   useEffect(() => {
-    if (!cloned) return
+    if (!clonedScene) return;
 
-    mixer.current = new THREE.AnimationMixer(cloned)
+    const mixer = new THREE.AnimationMixer(clonedScene);
+    mixerRef.current = mixer;
 
-    const allClips = [
-      ...animIdle.animations,
-      ...animRun.animations,
-      ...animAttack.animations,
-    ]
+    const animActions = {
+      idle: mixer.clipAction(idle.animations[0]),
+      jogForward: mixer.clipAction(jogForward.animations[0]),
+    };
 
-    const newActions = {}
-    allClips.forEach((clip) => {
-      newActions[clip.name.toLowerCase()] = mixer.current.clipAction(clip)
-    })
-
-    setActions(newActions)
+    setActions(animActions);
 
     return () => {
-      mixer.current.stopAllAction()
-    }
-  }, [cloned, animIdle, animRun, animAttack])
+      mixer.stopAllAction();
+    };
+  }, [clonedScene, idle, jogForward]);
 
-  // Play animations with transition
+  // Override materials
   useEffect(() => {
-    if (!mixer.current || !actions[animation]) return
+    if (!clonedScene) return;
+    clonedScene.traverse(child => {
+      if (child.isMesh) {
+        child.material = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color('#d83333'),
+          roughness: 0.5,
+          metalness: 1,
+          clearcoat: 1,
+          clearcoatRoughness: 0.05,
+        });
+      }
+    });
+  }, [clonedScene]);
 
-    const newAction = actions[animation]
-    const prevAction = actions[currentAction]
-
-    if (prevAction && prevAction !== newAction) {
-      prevAction.fadeOut(0.2)
-    }
-
-    newAction.reset().fadeIn(0.2).play()
-    setCurrentAction(animation)
-  }, [animation, actions, currentAction])
-
-  // Animate
-  useFrame((_, delta) => {
-    mixer.current?.update(delta)
-  })
-
+  //Hide part
   useEffect(() => {
-    if (!cloned) return
-    cloned.traverse((child) => {
+    if (!clonedScene) return
+    clonedScene.traverse((child) => {
       if (child.isSkinnedMesh && child.name === 'head') {
         child.visible = showHead
       }
     })
-  }, [cloned, showHead])
+  }, [clonedScene, showHead])
 
+  // Animation transition logic
+  useEffect(() => {
+    if (!actions || !mixerRef.current) return;
 
-  return cloned ? (
+    const mixer = mixerRef.current;
+    const newAction = actions[animationState];
+    const prevAction = actions[currentAction];
+
+    if (animationState !== currentAction && newAction) {
+      prevAction?.fadeOut(0.1);
+      newAction.reset();
+
+      if (['idle', 'jogForward',].includes(animationState)) {
+        newAction.setLoop(THREE.LoopRepeat);
+        newAction.clampWhenFinished = false;
+      } else {
+        newAction.setLoop(THREE.LoopOnce, 1);
+        newAction.clampWhenFinished = true;
+
+        const onFinish = () => {
+          mixer.removeEventListener('finished', onFinish);
+          if (nextInputQueueRef?.current?.length > 0) {
+            setAnimationState(nextInputQueueRef.current.shift());
+          } else {
+            isAttackingRef.current = false;
+            setAnimationState('idle');
+          }
+        };
+
+        mixer.addEventListener('finished', onFinish);
+      }
+
+      newAction.fadeIn(0.1).play();
+      setCurrentAction(animationState);
+    }
+  }, [animationState, actions, currentAction, isAttackingRef, nextInputQueueRef, setAnimationState]);
+
+  // Update animation each frame
+  useFrame((_, delta) => {
+    mixerRef.current?.update(delta);
+  });
+
+  return clonedScene ? (
     <primitive
-      object={cloned}
-      ref={group}
-      position={position}
-      dispose={null}
+      ref={modelRef}
+      object={clonedScene}
+      position={modelPosition}
+      rotation={modelRotation}
+      scale={modelScale}
     />
-  ) : null
-}
+  ) : null;
+};
 
-export default CharacterModel;
+export default CharacterModel
