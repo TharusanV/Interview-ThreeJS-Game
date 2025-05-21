@@ -16,8 +16,13 @@ export const useGameStore = create(
 
     // Actions
     setCanMove: (canMove) => set({ canMove }),
-    
+
+    startGame: () => {
+      set({ gameState: gameStates.INGAME});
+    },
+
     setGameState: (state) => set({ gameState: state }),
+
     pauseGame: () => {
       set({ isPaused: true, canMove: false });
     },

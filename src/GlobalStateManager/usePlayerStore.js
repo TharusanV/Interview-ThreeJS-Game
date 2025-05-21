@@ -10,7 +10,7 @@ export const usePlayerStore = create(
     equippedItem: null, 
 
     //Actions
-    
+    equipAnItem: (item) => set({ equippedItem: item }),
 
   }))
 );

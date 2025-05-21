@@ -8,21 +8,24 @@ import {
   PerspectiveCamera,
   PointerLockControls,
   useHelper,
-  Environment
+  Environment,
+  useProgress,
 } from '@react-three/drei'
 import { DirectionalLightHelper } from 'three'
 
 import { Physics, RigidBody } from '@react-three/rapier'
 
-import MainMenu from './UI/MainMenu'
+import Menu from './UI/Menu'
 
 import Player from './Entities/Player/Player'
 import { InterogrationRoom } from './MapObj/InterogrationRoom'
 import CharacterModel from './Entities/CharacterModel'
+import CustomCursor from './UI/CustomCursor'
+import MouseLookController from './Components/MouseLookController'
 
 const CameraSetup = () => {
   const { camera } = useThree()
-
+  
   useEffect(() => {
     camera.rotation.y = Math.PI // Set initial Y rotation (180 degrees)
   }, [camera])
@@ -56,13 +59,15 @@ const Lights = () => {
 }
 
 const App = () => {
+  const { progress } = useProgress();
+
   return (
     <>
       <Canvas shadows>
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={[4, 2.4, 14]} fov={70} />
           <CameraSetup />
-          {/*<PointerLockControls />*/}
+          <MouseLookController/> 
 
           <Lights />
 
@@ -83,8 +88,8 @@ const App = () => {
           </Physics>
         </Suspense>
       </Canvas>
-      
-      <MainMenu/>
+      {progress === 100 && <Menu />}
+      {progress === 100 && <CustomCursor />}
     </>
 
   )

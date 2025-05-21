@@ -21,6 +21,7 @@ const Player = () => {
 
   const { forward, backward, left, right } = useKeyboardHandling();
 
+
   useFrame((state) => {
     if (!playerRef.current) return;
 
