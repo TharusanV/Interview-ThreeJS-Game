@@ -9,7 +9,7 @@ const modelPosition = [0, 0.1, 1.5];
 const modelRotation = [0, -Math.PI, 0];
 const modelScale = [0.25, 0.25, 0.25];
 
-const CharacterModel = ({}) => {
+const CharacterModel = ({modelPosition = [0, 0.1, 1.5]  }) => {
   const modelRef = useRef();
   const mixerRef = useRef();
 

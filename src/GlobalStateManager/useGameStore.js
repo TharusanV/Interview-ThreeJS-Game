@@ -10,11 +10,14 @@ export const gameStates = { //Enum
 export const useGameStore = create(
   subscribeWithSelector((set, get) => ({
     //STATES
-    canMove: false, 
+    canMove: true, 
     isPaused: false,
-    gameState: gameStates.MENU,
+    gameState: gameStates.INGAME,
+    level: 1,
+    isCinematicPlaying: true,
 
     // Actions
+    setLevel: (levelNum) => set({levelNum}),
     setCanMove: (canMove) => set({ canMove }),
 
     startGame: () => {
@@ -28,7 +31,10 @@ export const useGameStore = create(
     },
     resumeGame: () => {
       set({ isPaused: false, canMove: true });
-    }
+    },
+
+    startCinematic: () => set({ isCinematicPlaying: true }),
+    endCinematic: () => set({ isCinematicPlaying: false }),
 
   }))
 );

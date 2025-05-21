@@ -14,7 +14,7 @@ const Menu = () => {
           data-text="START" 
           disabled={gameState !== gameStates.MENU} 
           onClick={() => {
-            usePointerStore.getState().setCursorType('crosshair')
+            usePointerStore.getState().setCursorType(null)
             startGame()
           }}>
             START
