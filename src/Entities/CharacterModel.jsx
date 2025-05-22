@@ -4,19 +4,24 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils';
 
-// Config
-const modelPosition = [0, 0.1, 1.5];
-const modelRotation = [0, -Math.PI, 0];
-const modelScale = [0.25, 0.25, 0.25];
+const CharacterModel = ({
+  modelPosition = [0, 0.1, 1.5], 
+  modelRotation = [0, -Math.PI, 0], 
+  modelScale = [0.25, 0.25, 0.25],
+  showHead = true,
+  showTorso = true,
+  showLeftArm = true,
+  showRightArm = true,
+  showLeftLeg = true,
+  showRightLeg = true,
 
-const CharacterModel = ({modelPosition = [0, 0.1, 1.5]  }) => {
+}) => {
   const modelRef = useRef();
   const mixerRef = useRef();
 
   const isAttackingRef = useRef(false);
   const nextInputQueueRef = useRef([]); 
   const [animationState, setAnimationState] = useState('idle');
-  const [showHead, setShowHead] = useState(true);
 
   const [actions, setActions] = useState({});
   const [currentAction, setCurrentAction] = useState(null);

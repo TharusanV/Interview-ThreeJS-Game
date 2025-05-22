@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from 'react'
 import { useGLTF } from '@react-three/drei'
-import { MeshStandardMaterial, MeshBasicMaterial } from 'three'
+import { MeshStandardMaterial, MeshBasicMaterial, CylinderGeometry, DoubleSide } from 'three'
 import { RigidBody } from '@react-three/rapier'
 
 export function InterogrationRoom({ rotation = [0, 0, 0], position = [0, 0.1, 0], scale = 1, ...props }) {
@@ -28,7 +28,7 @@ export function InterogrationRoom({ rotation = [0, 0, 0], position = [0, 0.1, 0]
         <mesh castShadow receiveShadow geometry={nodes.Chair.geometry} material={whiteMaterial} position={[-0.135, 0, 0.58]} rotation={[Math.PI / 2, 0, 1.846]} scale={0.004} />
         <mesh castShadow receiveShadow geometry={nodes.Chair001.geometry} material={whiteMaterial} position={[0.044, 0, -0.85]} rotation={[Math.PI / 2, 0, -Math.PI / 2]} scale={0.004} />
         {/*<mesh castShadow receiveShadow geometry={nodes.Watch.geometry} material={whiteMaterial} position={[-1.579, 1.927, 1.836]} rotation={[Math.PI / 2, 0, -Math.PI / 2]} scale={0} />*/}
-        <mesh castShadow receiveShadow geometry={nodes.Door.geometry} material={whiteMaterial} position={[0.406, 0, 3.032]} rotation={[Math.PI / 2, 0, 0]} scale={0.00011} />
+        <mesh castShadow receiveShadow geometry={nodes.Door.geometry} material={whiteMaterial} position={[0.406, 0, 3.032]} rotation={[Math.PI / 2, 0, 0]} scale={0.00011} /> 
         {/*<mesh castShadow receiveShadow geometry={nodes.Window.geometry} material={whiteLightMaterial} position={[1.547, 1.678, 0.795]} rotation={[Math.PI / 2, 0, Math.PI]} scale={0.01} />*/}
         <mesh receiveShadow geometry={nodes.Switch.geometry} material={whiteMaterial} position={[-0.352, 1.206, 2.955]} rotation={[Math.PI / 2, 0, 0]} scale={0.001} />
         {/*<mesh receiveShadow geometry={nodes.Neon_Tubes.geometry} material={whiteMaterial} position={[0.62, 2.702, 0.997]} rotation={[-Math.PI, -1.571, 0]} scale={0} />*/}
@@ -41,7 +41,7 @@ export function InterogrationRoom({ rotation = [0, 0, 0], position = [0, 0.1, 0]
 
       {/* Floor */}
       <RigidBody type="fixed" colliders="cuboid">
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, 0]}>
+        <mesh onPointerDown={console.log} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, 0]}>
           <boxGeometry args={[5, 12, 0.3]} /> {/* width, depth, height */}
         </mesh>
       </RigidBody>
@@ -69,11 +69,10 @@ export function InterogrationRoom({ rotation = [0, 0, 0], position = [0, 0.1, 0]
 
       {/* Right Wall */}
       <RigidBody type="fixed" colliders="cuboid">
-        <mesh rotation={[0, 0, -Math.PI/2]} position={[-2.1, 0, 0]}>
+        <mesh rotation={[0, 0, -Math.PI/2]} position={[-2.255, 0, 0]}>
           <boxGeometry args={[5, 1, 6.5]} /> 
         </mesh>
       </RigidBody>         
-
     </>
   )
 }

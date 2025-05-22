@@ -1,11 +1,10 @@
 import './Menu.css'
 import { useGameStore, gameStates } from '../GlobalStateManager/useGameStore';
-import { usePointerStore } from '../GlobalStateManager/usePointerStore';
+
 
 const Menu = () => {
   const gameState = useGameStore((state) => state.gameState);
   const startGame = useGameStore((state) => state.startGame);
-
 
   return (
     <>
@@ -13,10 +12,8 @@ const Menu = () => {
         <button 
           data-text="START" 
           disabled={gameState !== gameStates.MENU} 
-          onClick={() => {
-            usePointerStore.getState().setCursorType(null)
-            startGame()
-          }}>
+          onClick={() => {startGame()}}
+        >
             START
         </button>
       </div>

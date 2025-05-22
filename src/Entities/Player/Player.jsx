@@ -43,7 +43,7 @@ const Player = () => {
   
     //Move camera
     const {x,y,z} = playerRef.current.translation();
-    camera.position.set(x,y + 0.3,z-0.3);
+    camera.position.set(x,y + 0.3, z - 0.3);
   });
 
   return (

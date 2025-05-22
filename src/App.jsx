@@ -17,7 +17,8 @@ import Menu from './UI/Menu'
 import CustomCursor from './UI/CustomCursor'
 
 import { useGameStore } from './GlobalStateManager/useGameStore'
-import Map1 from './Maps/Map1'
+import Map1 from './Maps/Map1Stuff/Map1'
+import MouseHandler from './Components/MouseHandler'
 
 const CameraSetup = () => {
   const { camera } = useThree()
@@ -41,10 +42,12 @@ const App = () => {
     <>
       <Canvas shadows>
         <Suspense fallback={null}>
+          <MouseHandler/>
           <PerspectiveCamera makeDefault position={[4, 2.4, 14]} fov={70} />
-          <CameraSetup />
-
+          
           {currentLevel == 1 && <Map1 />}
+
+          <CameraSetup />
       
           <ContactShadows position={[0, -1.2, 0]} opacity={0.4} blur={2.5} />
         </Suspense>

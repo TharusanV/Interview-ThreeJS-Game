@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from "zustand/middleware";
+import { usePointerStore } from '../GlobalStateManager/usePointerStore';
 
 export const gameStates = { //Enum
   MENU: "MENU",
@@ -10,31 +11,29 @@ export const gameStates = { //Enum
 export const useGameStore = create(
   subscribeWithSelector((set, get) => ({
     //STATES
-    canMove: true, 
+    canMove: false, 
     isPaused: false,
-    gameState: gameStates.INGAME,
+    gameState: gameStates.MENU,
     level: 1,
-    isCinematicPlaying: true,
+    isCinematicPlaying: false,
 
     // Actions
-    setLevel: (levelNum) => set({levelNum}),
-    setCanMove: (canMove) => set({ canMove }),
-
     startGame: () => {
-      set({ gameState: gameStates.INGAME});
+      set({ gameState: gameStates.INGAME, isCinematicPlaying: true});
+      usePointerStore.getState().setCursorType(null)
     },
 
-    setGameState: (state) => set({ gameState: state }),
+    endCinematic: () => {
+      set({ isCinematicPlaying: false, });
+    },
 
     pauseGame: () => {
       set({ isPaused: true, canMove: false });
     },
+
     resumeGame: () => {
       set({ isPaused: false, canMove: true });
     },
-
-    startCinematic: () => set({ isCinematicPlaying: true }),
-    endCinematic: () => set({ isCinematicPlaying: false }),
 
   }))
 );
