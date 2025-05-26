@@ -14,24 +14,32 @@ const CharacterModel = ({
   showRightArm = true,
   showLeftLeg = true,
   showRightLeg = true,
-
+  isAttackingRef,
+  nextInputQueueRef,
+  animationState = 'idle',
+  setAnimationState,
 }) => {
   const modelRef = useRef();
   const mixerRef = useRef();
-
-  const isAttackingRef = useRef(false);
-  const nextInputQueueRef = useRef([]); 
-  const [animationState, setAnimationState] = useState('idle');
 
   const [actions, setActions] = useState({});
   const [currentAction, setCurrentAction] = useState(null);
 
   // Load model (no animations)
-  const baseModel = useGLTF('/models/Character/char.glb');
+  const baseModel = useGLTF('/models/Character/base-test.glb');
 
   // Load animations separately
   const idle = useGLTF('/models/Character/Anim/OrcIdle.glb');
+
   const jogForward = useGLTF('/models/Character/Anim/Jog.glb');
+
+  const punch = useGLTF('/models/Character/Anim/PunchAtk.glb');
+  const block = useGLTF('/models/Character/Anim/BoxingIdle.glb');
+
+  const pistolIdle = useGLTF('/models/Character/Anim/Pistol Idle.glb');
+
+  const sitTalk1 = useGLTF('/models/Character/Anim/Sitting Talking_1.glb');
+  const sitTalk2 = useGLTF('/models/Character/Anim/Sitting Talking_2.glb');
 
   // Clone the model (deep clone of skinned mesh and skeleton)
   const clonedScene = useMemo(() => {
@@ -48,6 +56,11 @@ const CharacterModel = ({
     const animActions = {
       idle: mixer.clipAction(idle.animations[0]),
       jogForward: mixer.clipAction(jogForward.animations[0]),
+      punch: mixer.clipAction(punch.animations[0]),
+      block: mixer.clipAction(block.animations[0]),
+      pistolIdle: mixer.clipAction(pistolIdle.animations[0]),
+      sitTalk1: mixer.clipAction(sitTalk1.animations[0]),
+      sitTalk2: mixer.clipAction(sitTalk2.animations[0]),
     };
 
     setActions(animActions);
@@ -77,11 +90,28 @@ const CharacterModel = ({
   useEffect(() => {
     if (!clonedScene) return
     clonedScene.traverse((child) => {
-      if (child.isSkinnedMesh && child.name === 'head') {
-        child.visible = showHead
+      if (child.isSkinnedMesh) {
+        if(child.name === 'head'){
+          child.visible = showHead;
+        }
+        if(child.name === 'leftarm'){
+          child.visible = showLeftArm;
+        }
+        if(child.name === 'leftleg'){
+          child.visible = showLeftLeg;
+        }
+        if(child.name === 'rightarm'){
+          child.visible = showRightArm;
+        }
+        if(child.name === 'rightleg'){
+          child.visible = showRightLeg;
+        }
+        if(child.name === 'torso'){
+          child.visible = showTorso;
+        }
       }
     })
-  }, [clonedScene, showHead])
+  }, [clonedScene, showHead, showLeftArm, showLeftLeg, showRightArm, showRightLeg, showTorso])
 
   // Animation transition logic
   useEffect(() => {
@@ -95,10 +125,11 @@ const CharacterModel = ({
       prevAction?.fadeOut(0.1);
       newAction.reset();
 
-      if (['idle', 'jogForward',].includes(animationState)) {
+      if (['idle', 'jogForward', 'sitTalk1', 'sitTalk2', ].includes(animationState)) {
         newAction.setLoop(THREE.LoopRepeat);
         newAction.clampWhenFinished = false;
-      } else {
+      } 
+      else {
         newAction.setLoop(THREE.LoopOnce, 1);
         newAction.clampWhenFinished = true;
 
@@ -106,7 +137,8 @@ const CharacterModel = ({
           mixer.removeEventListener('finished', onFinish);
           if (nextInputQueueRef?.current?.length > 0) {
             setAnimationState(nextInputQueueRef.current.shift());
-          } else {
+          } 
+          else {
             isAttackingRef.current = false;
             setAnimationState('idle');
           }
@@ -123,6 +155,11 @@ const CharacterModel = ({
   // Update animation each frame
   useFrame((_, delta) => {
     mixerRef.current?.update(delta);
+
+  const armBone = modelRef.current.getObjectByName("mixamorigLeftArm")
+  if (armBone) {
+    armBone.position.x = 10; 
+  }
   });
 
   return clonedScene ? (

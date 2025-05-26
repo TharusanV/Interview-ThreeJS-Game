@@ -14,17 +14,21 @@ export const useGameStore = create(
     canMove: false, 
     isPaused: false,
     gameState: gameStates.MENU,
-    level: 1,
+    level: 0,
+
     isCinematicPlaying: false,
+    hasCinematicFinished: false,
+
+    isCameraLocked: false,
 
     // Actions
     startGame: () => {
-      set({ gameState: gameStates.INGAME, isCinematicPlaying: true});
+      set({ gameState: gameStates.INGAME, isCinematicPlaying: true, isCameraLocked: true});
       usePointerStore.getState().setCursorType(null)
     },
 
     endCinematic: () => {
-      set({ isCinematicPlaying: false, });
+      set({ isCinematicPlaying: false, hasCinematicFinished: true, canMove: true});
     },
 
     pauseGame: () => {
@@ -34,6 +38,8 @@ export const useGameStore = create(
     resumeGame: () => {
       set({ isPaused: false, canMove: true });
     },
+
+    setCameraLocked: (state) => { set({isCameraLocked: state})},
 
   }))
 );
