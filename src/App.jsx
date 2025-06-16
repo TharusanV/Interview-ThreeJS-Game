@@ -8,9 +8,8 @@ import * as THREE from 'three'
 import { degToRad } from 'three/src/math/MathUtils.js'
 import { EffectComposer } from '@react-three/postprocessing'
 
-import BoatScene from './Scenes/BoatSceneFolder/BoatScene'
+
 import ParkourScene from './Scenes/ParkourSceneFolder/ParkourScene'
-import CameraTest from './Cameras/CameraTest'
 
 
 const App = () => {

@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react'
+import { usePlayerStore } from "../GlobalStateManager/usePlayerStore";
 
 export const useMovementHandler = () => {
-  const keys = {KeyW: "forward", KeyS: "backward", KeyA: "left", KeyD: "right", Shift: "sprint"}
+  const keys = {KeyW: "forward", KeyS: "backward", KeyA: "left", KeyD: "right", Space: "spacebar"}
   const moveFieldByKey = (key) => keys[key];
-  const [movement, setMovement] = useState({forward: false, backward: false, left: false, right: false, sprint: false})
+  const [movement, setMovement] = useState({forward: false, backward: false, left: false, right: false, spacebar: false})
   
 
   const setMovementStatus = (codeKey, boolean) => {

@@ -16,5 +16,6 @@ export const usePlayerStore = create(
     setPlayerAnimation: (anim) => set({playerAnimation: anim}),
     equipAnItem: (item) => set({ equippedItem: item }),
 
+
   }))
 );

@@ -73,14 +73,14 @@ useFrame(() => {
   const pos = playerRef.current.translation();
 
   // Set position at player's eye height
-  yawRef.current.position.set(pos.x, pos.y + 1.5, pos.z);
+  yawRef.current.position.set(pos.x, pos.y + 1.7, pos.z);
 
   // Calculate a forward vector pointing in the camera's look direction
   const forward = new THREE.Vector3(0, 0, -1); // forward in local space
   forward.applyQuaternion(yawRef.current.quaternion); // transform by current rotation
 
   // Move camera slightly ahead along the forward vector
-  const lookAheadDistance = 0.5; 
+  const lookAheadDistance = -5; 
   yawRef.current.position.add(forward.multiplyScalar(lookAheadDistance));
 });
 
