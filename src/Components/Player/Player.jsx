@@ -3,62 +3,38 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBody, CapsuleCollider } from "@react-three/rapier";
 import * as THREE from "three";
 
-import CharacterModel from "../Enemy/CharacterModel";
-
 import { usePlayerStore } from "../../GlobalStateManager/usePlayerStore";
 import { useGameStore } from "../../GlobalStateManager/useGameStore";
 import { useMovementHandler } from "../../CustomHooks/useMovementHandler";
 
-const MOVE_SPEED = 20;
+import { useStandardJump } from "./useJump";
 
-const JUMP_FORCE = 5;
+const MOVE_SPEED = 20;
 
 const direction = new THREE.Vector3();
 
-const Player = ({ spawnPoint = [0, 0, 0], modelScale }) => {
+const Player = ({ spawnPoint = [0, 0, 0]}) => {
   const { camera } = useThree();
+  
   const canMove = useGameStore((state) => state.canMove);
   const setPlayerRef = usePlayerStore((state) => state.setPlayerRef);
-  const setAnimation = usePlayerStore((state) => state.setPlayerAnimation);
-  const setIsGroundedRef = usePlayerStore((state) => state.setIsGroundedRef);
-  
-
   const { forward, backward, left, right, spacebar } = useMovementHandler();
 
   const playerRef = useRef();
-  const modelGroupRef = useRef();
   const isGroundedRef = useRef(true);
-
-  const [animationState, setAnimationState] = useState("idle");
-  
-  const jumpFunction = () => {
-    if(isGroundedRef.current){
-      playerRef.current.applyImpulse({x: 0, y: JUMP_FORCE, z: 0})
-    }
-  }
-
-  const valutFunction = () => {
-
-  }
+  const isJumpingRef = useRef(false);
 
   useEffect(() => {
     if (playerRef.current) {
       setPlayerRef(playerRef);
-      setAnimation(animationState);
-      setIsGroundedRef(isGroundedRef);
     }
-  }, [playerRef, animationState]);
+  }, [playerRef]);
 
 
   useFrame(() => {
     if (!playerRef.current || !canMove) return;
 
-    if(spacebar){
-      jumpFunction();
-    }
-
-    const velocity = playerRef.current.linvel();
-
+    // Get camera direction
     const camDir = new THREE.Vector3();
     camera.getWorldDirection(camDir);
     camDir.y = 0;
@@ -67,41 +43,30 @@ const Player = ({ spawnPoint = [0, 0, 0], modelScale }) => {
     const camRight = new THREE.Vector3();
     camRight.crossVectors(camDir, camera.up).normalize();
 
+    if (spacebar && isGroundedRef.current && !isJumpingRef.current) {
+      useStandardJump(playerRef, isGroundedRef, isJumpingRef);
+    }
+
+    // Movement
     direction.set(0, 0, 0);
     if (forward) direction.add(camDir);
     if (backward) direction.sub(camDir);
     if (left) direction.sub(camRight);
     if (right) direction.add(camRight);
 
+    const velocity = playerRef.current.linvel();
     const isMoving = direction.lengthSq() > 0;
 
     if (isMoving) {
       direction.normalize().multiplyScalar(MOVE_SPEED);
-
       playerRef.current.wakeUp();
       playerRef.current.setLinvel({x: direction.x, y: velocity.y, z: direction.z,});
-
-      setAnimationState("forward");
     } 
-    
     else {
       if (velocity.x !== 0 || velocity.z !== 0) {
         playerRef.current.setLinvel({ x: 0, y: velocity.y, z: 0 });
       }
-
-      setAnimationState("idle");
     }
-
-    // Rotate character group based on camera yaw
-    if (modelGroupRef.current && (animationState === "idle" || animationState === "forward")) {
-      const yaw = Math.atan2(camDir.x, camDir.z);
-      modelGroupRef.current.rotation.y = yaw;
-    }
-
-
-    //const playerPos = playerRef.current.translation(); // Rapier.Vector3
-    //console.log('Distance to player:', playerPos);
-
   });
 
   return (
@@ -109,19 +74,23 @@ const Player = ({ spawnPoint = [0, 0, 0], modelScale }) => {
       ref={playerRef}
       position={spawnPoint}
       colliders={false}
+      type="dynamic"
+      mass={1}
       lockRotations
       name="Player"
     >
-      <CapsuleCollider position={[0, 0.875, 0]} args={[1.25, 0.25]} 
+      <CapsuleCollider position={[0, 1.6/2, 0]} args={[(1.6 - 2 * 0.25) / 2, 0.5 / 2]} 
         onCollisionEnter={({other}) => {
-          if(other.rigidBodyObject.name === "ground"){
-            isGroundedRef.current = true;
-          }
+          if(other.colliderObject.name === "ground"){
+            isGroundedRef.current = true; 
+            isJumpingRef.current = false; 
+            console.log(2);}
         }}
         onCollisionExit={({other}) => {
-          if(other.rigidBodyObject.name === "ground"){
-            isGroundedRef.current = false;
-          }
+          if(other.colliderObject.name === "ground"){
+            isGroundedRef.current = false; 
+            isJumpingRef.current = true; 
+            console.log(1);}
         }}
       />
 

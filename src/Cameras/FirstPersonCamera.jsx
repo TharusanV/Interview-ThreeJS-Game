@@ -7,82 +7,65 @@ import { useGameStore } from "../GlobalStateManager/useGameStore";
 
 import { useMovementHandler } from "../CustomHooks/useMovementHandler";
 
-const FirstPersonCamera = ({
-  sensitivity = 0.002,
-  maxPitch = Math.PI / 2 - 0.1,
-  minPitch = -Math.PI / 2 + 0.1
-}) => {
+const FirstPersonCamera = ({  cameraPosition = [0, 1.5, 0], cameraRotation = [0, 0, 0], }) => {
   const { gl, camera, scene } = useThree();
+
   const playerRef = usePlayerStore((state) => state.playerRef);
   const canMove = useGameStore((state) => state.canMove);
-  const { forward, backward, left, right } = useMovementHandler();
 
-  const pitchRef = useRef(new THREE.Object3D());
-  const yawRef = useRef(new THREE.Object3D());
+  const { forward, backward, left, right, spacebar } = useMovementHandler()
 
-  const isPointerLocked = useRef(false);
-
-  useEffect(() => {
-    // Set up camera hierarchy
-    yawRef.current.add(pitchRef.current);
-    pitchRef.current.add(camera);
-    scene.add(yawRef.current);
-
-    return () => {
-      scene.remove(yawRef.current);
-    };
-  }, [camera, scene]);
+  const rotationY = useRef(0)
+  const pitch = useRef(0)
 
   useEffect(() => {
-    const handleMouseMove = (event) => {
-      if (!isPointerLocked.current) return;
+    // Apply initial camera position and rotation
+    camera.position.set(...cameraPosition)
+    camera.rotation.set(...cameraRotation)
+  }, [camera, cameraPosition, cameraRotation])
 
-      yawRef.current.rotation.y -= event.movementX * sensitivity;
-      pitchRef.current.rotation.x -= event.movementY * sensitivity;
+  useEffect(() => {
+    const canvas = gl.domElement
+    const isPointerLocked = () => document.pointerLockElement === canvas
 
-      // Clamp pitch rotation
-      pitchRef.current.rotation.x = Math.max(
-        minPitch,
-        Math.min(maxPitch, pitchRef.current.rotation.x)
-      );
-    };
+    const onMouseMove = (e) => {
+      if (!isPointerLocked()) return
 
-    const handleClick = () => {
-      gl.domElement.requestPointerLock();
-    };
+      rotationY.current -= e.movementX * 0.002
+      pitch.current += e.movementY * 0.002
+      pitch.current = THREE.MathUtils.clamp(pitch.current, -Math.PI / 3, Math.PI / 3)
+    }
 
-    const handlePointerLockChange = () => {
-      isPointerLocked.current = document.pointerLockElement === gl.domElement;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('click', handleClick);
-    document.addEventListener('pointerlockchange', handlePointerLockChange);
+    canvas.addEventListener('click', () => canvas.requestPointerLock())
+    document.addEventListener('mousemove', onMouseMove)
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('click', handleClick);
-      document.removeEventListener('pointerlockchange', handlePointerLockChange);
-    };
-  }, [sensitivity, minPitch, maxPitch, gl]);
+      document.removeEventListener('mousemove', onMouseMove)
+    }
+  }, [gl])
 
   
-useFrame(() => {
-  if (!playerRef.current || !canMove) return;
+  useFrame(() => {
+    if (!playerRef.current || !canMove) return;
 
-  const pos = playerRef.current.translation();
+    // --- Update Camera Rotation (based on mouse input) ---
+    const quaternion = new THREE.Quaternion()
+    quaternion.setFromEuler(new THREE.Euler(pitch.current, rotationY.current, 0, 'YXZ'))
+    camera.quaternion.copy(quaternion)
+    
+    // --- Update Camera Position ---
+    const playerPos = playerRef.current.translation()
+    camera.position.set(playerPos.x, playerPos.y + cameraPosition[1], playerPos.z)
 
-  // Set position at player's eye height
-  yawRef.current.position.set(pos.x, pos.y + 1.7, pos.z);
+    // --- LOGGING INFO ---
+    //const worldPos = new THREE.Vector3()
+    //camera.getWorldPosition(worldPos)
 
-  // Calculate a forward vector pointing in the camera's look direction
-  const forward = new THREE.Vector3(0, 0, -1); // forward in local space
-  forward.applyQuaternion(yawRef.current.quaternion); // transform by current rotation
-
-  // Move camera slightly ahead along the forward vector
-  const lookAheadDistance = -5; 
-  yawRef.current.position.add(forward.multiplyScalar(lookAheadDistance));
-});
+    //console.log('Camera World Position:', worldPos)
+    //console.log('Camera Height (Y):', worldPos.y.toFixed(2))
+    //console.log('Camera Rotation (Euler):', camera.rotation)
+    //console.log('Camera FOV:', camera.fov)
+  });
 
   return null;
 };
