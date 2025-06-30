@@ -9,14 +9,13 @@ import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 
 const JUMP_FORCE = 5;
+const BOX_JUMP_FORCE = JUMP_FORCE * 2;
 
-export const useStandardJump = (playerRef, isGroundedRef, isJumpingRef) => {
-    if (!isGroundedRef.current || isJumpingRef.current) return;
-
-    // Apply physics jump
-    playerRef.current.applyImpulse({ x: 0, y: JUMP_FORCE, z: 0 });
+export const useStandardJump = (playerRef) => {
+    if (!playerRef.current) return;
+    playerRef.current.applyImpulse({ x: 0, y: 6, z: 0 }, true);
 }
 
-export const useBoxJump = () => {
-  
+export const useBoxJump = (playerRef) => {
+    playerRef.current.applyImpulse({ x: 0, y: BOX_JUMP_FORCE, z: 0 }); 
 }

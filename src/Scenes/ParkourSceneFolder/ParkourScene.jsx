@@ -21,6 +21,8 @@ const ParkourScene = () => {
       <Physics gravity={[0, -16.4, 0]} debug>
         <Ground/>
         <Player/>
+
+        <Building position={[0,0,10]} args={[1,10,1]}/>
       </Physics>
     </>
 
@@ -45,12 +47,24 @@ const Ground = () => {
   );
 };
 
-const Building = ({position = [0,0,0], args=[1,0.4,1], color="red"}) => {
+const Building = ({ position = [0, 0, 0], args = [1, 0.4, 1], color = "red" }) => {
+  const halfHeight = args[1] / 2;
+
   return (
-    <mesh position={position}>
-      <boxGeometry args={args} />
-      <meshStandardMaterial color={color} />
-      <Edges linewidth={4} scale={1} color="black" />
-    </mesh>
+    <RigidBody type="fixed" colliders={false}>
+      {/* Mesh positioned with its bottom at y = 0 */}
+      <mesh position={[position[0], position[1] + halfHeight, position[2]]}>
+        <boxGeometry args={args} />
+        <meshStandardMaterial color={color} />
+        <Edges linewidth={4} scale={1} color="black" />
+      </mesh>
+
+      {/* Collider also raised by half height */}
+      <CuboidCollider
+        name="ground"
+        args={[args[0] / 2, args[1] / 2, args[2] / 2]}
+        position={[position[0], position[1] + halfHeight, position[2]]}
+      />
+    </RigidBody>
   );
 };

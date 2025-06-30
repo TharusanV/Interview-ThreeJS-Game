@@ -1,13 +1,13 @@
 import { useRef, useState, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { RigidBody, CapsuleCollider } from "@react-three/rapier";
+import { RigidBody, CapsuleCollider, CuboidCollider } from "@react-three/rapier";
 import * as THREE from "three";
 
 import { usePlayerStore } from "../../GlobalStateManager/usePlayerStore";
 import { useGameStore } from "../../GlobalStateManager/useGameStore";
 import { useMovementHandler } from "../../CustomHooks/useMovementHandler";
 
-import { useStandardJump } from "./useJump";
+import { useStandardJump, useBoxJump } from "./useJump";
 
 const MOVE_SPEED = 20;
 
@@ -18,11 +18,15 @@ const Player = ({ spawnPoint = [0, 0, 0]}) => {
   
   const canMove = useGameStore((state) => state.canMove);
   const setPlayerRef = usePlayerStore((state) => state.setPlayerRef);
-  const { forward, backward, left, right, spacebar } = useMovementHandler();
+  const { forward, backward, left, right, spacebarHold, jumpReleased, setJumpReleased } = useMovementHandler();
 
   const playerRef = useRef();
   const isGroundedRef = useRef(true);
+
   const isJumpingRef = useRef(false);
+  const jumpDirectionRef = useRef(new THREE.Vector3());
+  const hasQueuedBoxJump = useRef(false);
+  const boxJumpTimerRef = useRef(null);
 
   useEffect(() => {
     if (playerRef.current) {
@@ -43,9 +47,28 @@ const Player = ({ spawnPoint = [0, 0, 0]}) => {
     const camRight = new THREE.Vector3();
     camRight.crossVectors(camDir, camera.up).normalize();
 
-    if (spacebar && isGroundedRef.current && !isJumpingRef.current) {
-      useStandardJump(playerRef, isGroundedRef, isJumpingRef);
-    }
+
+  if (spacebarHold && jumpReleased && isGroundedRef.current && !isJumpingRef.current) {
+    // Store camera direction when jump is initiated
+    jumpDirectionRef.current.copy(camDir);
+
+    // Execute standard jump
+    useStandardJump(playerRef);
+    setJumpReleased(false);
+    isJumpingRef.current = true;
+    isGroundedRef.current = false;
+
+    // Schedule box jump after 2s
+    hasQueuedBoxJump.current = true;
+    clearTimeout(boxJumpTimerRef.current); // Prevent overlap
+    
+    boxJumpTimerRef.current = setTimeout(() => {
+      if (playerRef.current && hasQueuedBoxJump.current) {
+        useBoxJump(playerRef, jumpDirectionRef.current);
+        hasQueuedBoxJump.current = false;
+      }
+    }, 1000);
+  }
 
     // Movement
     direction.set(0, 0, 0);
@@ -84,16 +107,46 @@ const Player = ({ spawnPoint = [0, 0, 0]}) => {
           if(other.colliderObject.name === "ground"){
             isGroundedRef.current = true; 
             isJumpingRef.current = false; 
-            console.log(2);}
+          }
         }}
         onCollisionExit={({other}) => {
           if(other.colliderObject.name === "ground"){
             isGroundedRef.current = false; 
             isJumpingRef.current = true; 
-            console.log(1);}
+            //console.log(1);
+          }
         }}
       />
 
+      {/* Forward side sensor */}
+      <CuboidCollider
+        sensor
+        args={[0.2, 0.5, 0.5]}
+        position={[0, 0.8, 1]}
+        onIntersectionEnter={({ other }) => {
+          //console.log('Front wall detected:', other)
+        }}
+      />
+
+      {/* Left side sensor */}
+      <CuboidCollider
+        sensor
+        args={[0.1, 0.5, 0.3]}
+        position={[-0.6, 0.8, 0]}
+        onIntersectionEnter={({ other }) => {
+          //console.log('Left wall detected:', other)
+        }}
+      />
+
+      {/* Right side sensor */}
+      <CuboidCollider
+        sensor
+        args={[0.1, 0.5, 0.3]}
+        position={[0.6, 0.8, 0]}
+        onIntersectionEnter={({ other }) => {
+          //console.log('Right wall detected:', other)
+        }}
+      />
       
     </RigidBody>
   );
