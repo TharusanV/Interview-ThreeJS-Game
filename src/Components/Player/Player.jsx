@@ -7,7 +7,7 @@ import { usePlayerStore } from "../../GlobalStateManager/usePlayerStore";
 import { useGameStore } from "../../GlobalStateManager/useGameStore";
 import { useMovementHandler } from "../../CustomHooks/useMovementHandler";
 
-import { useStandardJump, useBoxJump } from "./useJump";
+import { grabZipline, vaultOverObstacle, vaultOntoObstacle, wallRunSides, wallRunUp, climbUp, climbPipeLadder, basicJump} from "./usePlayerActions"
 
 const MOVE_SPEED = 20;
 
@@ -18,15 +18,35 @@ const Player = ({ spawnPoint = [0, 0, 0]}) => {
   
   const canMove = useGameStore((state) => state.canMove);
   const setPlayerRef = usePlayerStore((state) => state.setPlayerRef);
-  const { forward, backward, left, right, spacebarHold, jumpReleased, setJumpReleased } = useMovementHandler();
+  const { forward, backward, left, right, spacebarHold, ctrlHold, spacebarPressed, ctrlPressed} = useMovementHandler();
 
   const playerRef = useRef();
-  const isGroundedRef = useRef(true);
 
+  const currentAction = useRef(null);
+  const traversalLock = useRef(false);
+
+  const isGroundedRef = useRef(true);
+  const isInAir = useRef(false);
   const isJumpingRef = useRef(false);
   const jumpDirectionRef = useRef(new THREE.Vector3());
-  const hasQueuedBoxJump = useRef(false);
-  const boxJumpTimerRef = useRef(null);
+  
+  const aboveZipline = useRef(false);
+  const belowZipline = useRef(false);
+  const touchingWallLeft = useRef(false);
+  const touchingWallRight = useRef(false);
+  const touchingWallFront = useRef(false);
+  const vaultBoxInFront = useRef(false);
+  const isHanging = useRef(false);
+  const pipeInFront = useRef(false);
+  const ladderInFront = useRef(false);
+
+  const canGrabZipline = (aboveZipline.current || belowZipline.current) && ((spacebarPressed && isGroundedRef.current) || isInAir.current);
+  const canWallRunSide = (touchingWallLeft || touchingWallRight) && spacebarHold && forward;
+  const canWallRunUp = touchingWallFront && (spacebarHold || spacebarPressed);
+  const canVault = vaultBoxInFront && forward;
+  const canClimb = isHanging && forward;
+  const canPipeClimb = pipeInFront || ladderInFront;
+  const canJump = spacebarHold && isGroundedRef.current && !isJumpingRef.current;
 
   useEffect(() => {
     if (playerRef.current) {
@@ -47,30 +67,26 @@ const Player = ({ spawnPoint = [0, 0, 0]}) => {
     const camRight = new THREE.Vector3();
     camRight.crossVectors(camDir, camera.up).normalize();
 
-
-  if (spacebarHold && jumpReleased && isGroundedRef.current && !isJumpingRef.current) {
-    // Store camera direction when jump is initiated
-    jumpDirectionRef.current.copy(camDir);
-
-    // Execute standard jump
-    useStandardJump(playerRef);
-    setJumpReleased(false);
-    isJumpingRef.current = true;
-    isGroundedRef.current = false;
-
-    // Schedule box jump after 2s
-    hasQueuedBoxJump.current = true;
-    clearTimeout(boxJumpTimerRef.current); // Prevent overlap
+    //Space events
+    //if (canGrabZipline) { grabZipline(spacebarPressed); currentAction.current = 'zipline'; } 
+    //else if (canVault) { spacebarHold ? vaultOverObstacle(playerRef) : vaultOntoObstacle(playerRef); } 
+    //else if (canWallRunSide) { wallRunSides(playerRef); currentAction.current = 'wallRunSides'; } 
+    //else if (canWallRunUp) { wallRunUp(playerRef); currentAction.current = 'wallRunUp'; } 
+    //else if (canClimb) { climbUp(playerRef); currentAction.current = 'climb'; } 
+    //else if (canPipeClimb) { climbPipeLadder(playerRef); currentAction.current = 'climbPipeLadder'; } 
+    if (canJump) { 
+      basicJump(playerRef, isJumpingRef, isGroundedRef); 
+      console.log(12345); 
+      currentAction.current = 'basicJump'; 
+    }
     
-    boxJumpTimerRef.current = setTimeout(() => {
-      if (playerRef.current && hasQueuedBoxJump.current) {
-        useBoxJump(playerRef, jumpDirectionRef.current);
-        hasQueuedBoxJump.current = false;
-      }
-    }, 1000);
-  }
 
-    // Movement
+    //CTRL Events
+    //if (highFallDetected){ rollOnLanding(); }
+    //else if (isRunning){ slide(); }
+    //else { crouch(); }
+
+    // Movement based on camera direction
     direction.set(0, 0, 0);
     if (forward) direction.add(camDir);
     if (backward) direction.sub(camDir);
@@ -113,7 +129,7 @@ const Player = ({ spawnPoint = [0, 0, 0]}) => {
           if(other.colliderObject.name === "ground"){
             isGroundedRef.current = false; 
             isJumpingRef.current = true; 
-            //console.log(1);
+            console.log(1);
           }
         }}
       />
