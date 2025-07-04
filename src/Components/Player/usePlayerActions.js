@@ -37,14 +37,14 @@ export const wallRunSides = (playerRef) => {
 const JUMP_FORCE = 5;
 const BOX_JUMP_FORCE = JUMP_FORCE * 2;
 
-export const basicJump = (playerRef, isJumpingRef, isGroundedRef) => {
+export const basicJump = (playerRef) => {
     if (!playerRef.current) return;
     
-    playerRef.current.applyImpulse({ x: 0, y: 1, z: 0 });
+    playerRef.current.applyImpulse({ x: 0, y: JUMP_FORCE, z: 0 }), true;
 }
 
 export const vaultOverObstacle = (playerRef) => {
-    //playerRef.current.applyImpulse({ x: 0, y: BOX_JUMP_FORCE, z: 0 }); 
+    playerRef.current.applyImpulse({ x: 0, y: BOX_JUMP_FORCE, z: 0 }); 
 }
 
 export const vaultOntoObstacle = (playerRef) => {

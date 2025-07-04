@@ -4,25 +4,11 @@ import { usePlayerStore } from "../GlobalStateManager/usePlayerStore";
 export const useMovementHandler = () => {
   const moveFieldByKey = (key) => keys[key];
 
-  const keys = {KeyW: "forward", KeyS: "backward", KeyA: "left", KeyD: "right", Space: "spacebarHold", ControlLeft: "ctrlHold",}
-  const [movement, setMovement] = useState({forward: false, backward: false, left: false, right: false, spacebarHold: false, ctrlHold: false})
-  const [spacebarPressed, setSpacebarPressed] = useState(false);
-  const [ctrlPressed, setCtrlPressed] = useState(false);
+  const keys = {KeyW: "forward", KeyS: "backward", KeyA: "left", KeyD: "right", Space: "spacebar" }
+  const [movement, setMovement] = useState({forward: false, backward: false, left: false, right: false, spacebar: false})
 
   const setMovementStatus = (codeKey, boolean) => {
     if (!codeKey) return;
-
-    if (codeKey === 'spacebarHold') {
-      if (boolean && !movement.spacebarHold){ 
-        setSpacebarPressed(true);
-      }
-    }
-
-    if (codeKey === "ctrlHold") {
-      if (boolean && !movement.ctrlHold){
-        setCtrlPressed(true);
-      }
-    }
 
     setMovement((m) => ({ ...m, [codeKey]: boolean }));
   };
@@ -45,24 +31,9 @@ export const useMovementHandler = () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [movement]);
-
-  // Reset press flags after each render frame
-  useEffect(() => {
-    if (spacebarPressed) {
-      const timeout = setTimeout(() => setSpacebarPressed(false), 0);
-      return () => clearTimeout(timeout);
-    }
-    
-    if (ctrlPressed) {
-      const timeout = setTimeout(() => setCtrlPressed(false), 0);
-      return () => clearTimeout(timeout);
-    }
-  }, [spacebarPressed, ctrlPressed]);
+  }, []);
 
   return {
     ...movement,
-    spacebarPressed,
-    ctrlPressed,
   };
 }
