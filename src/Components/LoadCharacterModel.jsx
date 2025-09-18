@@ -5,14 +5,16 @@ import * as THREE from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils';
 import { degToRad } from 'three/src/math/MathUtils.js';
 
-const CharacterModel = ({
-  name,
+const LoadCharacterModel = ({
+  fileModelName,
+
   modelPosition = [0, 0, 0], 
-  modelRotation = [degToRad(90), degToRad(0), 0], 
+  modelRotation = [0, 0, 0], 
   modelScale = [1, 1, 1],
   
   isAttackingRef,
   nextInputQueueRef,
+
   animationState = 'idle',
   setAnimationState,
 }) => {
@@ -22,9 +24,8 @@ const CharacterModel = ({
   const [actions, setActions] = useState({});
   const [currentAction, setCurrentAction] = useState(null);
 
-
   // Load model (no animations)
-  const baseModel = useGLTF(`/Char/${name}.glb`);
+  const baseModel = useGLTF(`/Char/${fileModelName}.glb`);
 
   // Load animations separately
   const idle = useGLTF('/Animations/Idle.glb');
@@ -114,4 +115,4 @@ const CharacterModel = ({
   ) : null;
 };
 
-export default CharacterModel
+export default LoadCharacterModel

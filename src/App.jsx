@@ -11,6 +11,7 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import TrainScene from './Scenes/Maps/0-TrainIntro/TrainScene'
 import ConstantMenu from './Scenes/UI/ConstantMenu'
 import CustomCursor from './Scenes/UI/CustomCursor'
+import PhoneUI from './Scenes/PhoneThings/PhoneUI'
 
 
 const App = () => {
@@ -18,14 +19,15 @@ const App = () => {
   const eyeHeight = 1.75
 
   return (
-    <>
+    <div style={{ width: "100vw", height: "100vh" }}>
+      
       <Canvas
         shadows
         dpr={[1, 2]}
         gl={{ antialias: true, toneMappingExposure: 1.2 }}
       >
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 0, 0]} fov={90} />
+          <PerspectiveCamera makeDefault position={[0, 1.2, 0]} fov={90} />
 
           {sceneNum === 0 && <TrainScene/>}
 
@@ -39,10 +41,12 @@ const App = () => {
 
         </Suspense>
       </Canvas>
-
-      <ConstantMenu/>
       
-    </>
+
+      {/*<ConstantMenu/>*/} 
+      <PhoneUI/>
+      
+    </div>
   )
 }
 

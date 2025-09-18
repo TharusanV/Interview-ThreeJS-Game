@@ -9,9 +9,7 @@ import { useZiplineManager } from "../../GlobalStateManager/useZiplineManager";
 
 import { useMovementHandler } from "../../CustomHooks/useMovementHandler";
 
-import { grabZipline, vaultOverObstacle, vaultOntoObstacle, wallRunSides, wallRunUp, climbUp, climbPipeLadder, basicJump} from "./usePlayerActions"
-
-const MOVE_SPEED = 20;
+import { basicJump} from "./usePlayerActions"
 
 const direction = new THREE.Vector3();
 
@@ -20,21 +18,12 @@ const Player = ({ spawnPoint = [0, 0, 0]}) => {
   
   const canMove = useGameStore((state) => state.canMove);
   const setCanMove = useGameStore((state) => state.setCanMove);
-  const setPlayerRef = usePlayerStore((state) => state.setPlayerRef);
-  const arrayOfZiplines = useZiplineManager((state) => state.ziplinePillars);
-  
   const { forward, backward, left, right, spacebar} = useMovementHandler();
 
   const playerRef = useRef();
 
   const [isGrounded, setIsGrounded] = useState(false);
   const [canPerformAction, setCanPerformAction] = useState(false);
-
-  const [nearZipline, setNearZipline] = useState(false);
-  const [attachedToZipline, setAttachedToZipline] = useState(false);
-  const ziplineDataRef = useRef({ start: null, end: null });
-  const ziplineCooldownRef = useRef(0); 
-  const ZIPLINE_COOLDOWN = 0.5; 
 
   useEffect(() => {
     if (playerRef.current) {
